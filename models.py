@@ -20,4 +20,8 @@ def get_time():
 #
 ## always commit your models to avoid problems later
 
+db.define_table('images',
+                Field('image_url')
+                )
+
 db.commit()

@@ -11,10 +11,10 @@
   </head>
   <body>
     <!-- Navigation bar -->
-    <nav class="navbar is-dark" role="navigation" aria-label="main navigation">
+    <nav class="navbar" style="background-color: #DDE9FF;" role="navigation" aria-label="main navigation">
       <div class="navbar-brand">
         <a class="navbar-item" href="[[=URL('index')]]">
-          Learn py4web
+          Study Group Finder
           <!-- <img class="logo" width="150" src="images/site_icon.png"> -->
         </a>
 
@@ -48,8 +48,8 @@
                   </div>
                 </div>
               [[else:]]
-                <a class="button is-link" href="[[=URL('auth/register')]]">Sign up</a>
-                <a class="button is-success" href="[[=URL('auth/login')]]">Log in</a>
+                <a class="button is-info is-outlined" href="[[=URL('auth/register')]]">Sign up</a>
+                <a class="button is-success is-outlined" href="[[=URL('auth/login')]]">Log in</a>
               [[pass]]
             </div>
           </div>

@@ -31,12 +31,36 @@ from .common import db, session, T, cache, auth, logger, authenticated, unauthen
 from py4web.utils.url_signer import URLSigner
 from .models import get_user_email
 
+# Source: adding images - https://github.com/learn-py4web/star_ratings
+
 url_signer = URLSigner(session)
+
+def do_setup():
+    db(db.images).delete()
+    db.images.insert(image_url=URL('static', 'images/' + 'mainpageimage.png'))
+
+@action('setup')
+@action.uses(db)
+def setup():
+    do_setup()
+    return "ok"
+
 
 @action('index')
 @action.uses('index.html', db, auth, url_signer)
 def index():
+    # If the database is empty, sets it up.
+    if db(db.images).count() == 0:
+        do_setup()
+
     return dict(
         # COMPLETE: return here any signed URLs you need.
         my_callback_url = URL('my_callback', signer=url_signer),
+        get_images_url = URL('get_images', signer=url_signer)
     )
+
+@action('get_images')
+@action.uses(url_signer.verify(), db)
+def get_images():
+    """Returns the list of images."""
+    return dict(images=db(db.images).select().as_list())

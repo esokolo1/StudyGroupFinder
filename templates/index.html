@@ -6,9 +6,38 @@
 }
 </style>
 
+<style>
+  .button_list{
+    background-color: #DDE9FF; 
+    position: absolute; 
+    top: 55%;
+    box-shadow: 3px 3px #888888;
+  }
+</style>
 
 <div class="section" id="vue-target" v-cloak>
   <!-- Put here your Vue.js template -->
+  <div class="main_page is-mobile" style="position: relative">
+    <!--Title-->
+    <div class="title">
+      <h1 class="is-size-2 has-text-weight-light is-mobile" style="position: absolute; left: 5%;">Welcome to</h1>
+      <h1 class="title is-1 has-text-weight-medium is-mobile" style="position: absolute; top: 20%; left: 20%; letter-spacing: 0.2em;">Study Group Finder</h1>
+    </div>
+
+    <!--Images-->
+    <figure v-for="img in images" class="has-text-centered">
+      <img v-bind:src="img.image_url" width="1039" height="694">
+    </figure>
+
+    <!--Buttons-->
+    <div class="Buttons" style="display: flex;">
+      <button class="button is-rounded is-large is-size-6-mobile button_list" style="left: 15%;">Dashboard</button>
+      <button class="button is-rounded is-large is-size-6-mobile button_list" style="left: 40%;">Find Session</button>
+      <button class="button is-rounded is-large is-size-6-mobile button_list" style="left: 65%;">Create Session</button>
+    </div>
+
+  </div>
+
 </div>
 
 
@@ -16,6 +45,7 @@
 <!-- Loads the index-specific js for Vue -->
 <script>
   let my_callback_url = "[[=XML(my_callback_url)]]";
+  let get_images_url = "[[=XML(get_images_url)]]";
 </script>
 <script src="js/index.js"></script>
 [[end]]
