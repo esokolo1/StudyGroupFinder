@@ -30,10 +30,12 @@
     </figure>
 
     <!--Buttons-->
-    <div class="Buttons" style="display: flex;">
-      <button class="button is-rounded is-large is-size-6-mobile button_list" style="left: 15%;">Dashboard</button>
-      <button class="button is-rounded is-large is-size-6-mobile button_list" style="left: 40%;">Find Session</button>
-      <button class="button is-rounded is-large is-size-6-mobile button_list" style="left: 65%;">Create Session</button>
+    <div class="Buttons is-flex">
+      <nav>
+      <a class="button is-rounded is-large is-size-6-mobile button_list" style="left: 15%;">Dashboard</a>
+      <a href="[[=URL('find_session')]]" class="button is-rounded is-large is-size-6-mobile button_list" style="left: 40%;">Find Session</a>
+      <a href="[[=URL('create_session')]]" class="button is-rounded is-large is-size-6-mobile button_list" style="left: 65%;">Create Session</a>
+      </nav>
     </div>
 
   </div>

@@ -31,6 +31,8 @@ from .common import db, session, T, cache, auth, logger, authenticated, unauthen
 from py4web.utils.url_signer import URLSigner
 from .models import get_user_email
 
+from py4web.utils.form import Form, FormStyleBulma
+
 # Source: adding images - https://github.com/learn-py4web/star_ratings
 
 url_signer = URLSigner(session)
@@ -64,3 +66,24 @@ def index():
 def get_images():
     """Returns the list of images."""
     return dict(images=db(db.images).select().as_list())
+
+
+@action('find_session', method=["GET", "POST"])
+@action.uses('find_session.html', db, session, auth.user, url_signer)
+def find_session():
+    # form = Form(db.auth_user, csrf_session=session, formstyle=FormStyleBulma)
+    # if form.accepted:
+    # We simply redirect; the insertion already happened
+        # redirect(URL('index'))
+    return dict(
+        get_images_url = URL('get_images', signer=url_signer)
+    )
+
+
+@action('create_session', method=["GET", "POST"])
+@action.uses('create_session.html', db, session, auth.user, url_signer)
+def create_session():
+
+    return dict(
+        get_images_url = URL('get_images', signer=url_signer)
+    )
