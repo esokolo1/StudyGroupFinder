@@ -1,5 +1,49 @@
 [[extend 'layout.html']]
 
+<!-- testing session display and create -->
+
+<div class="section">
+  <!-- title -->
+  <div class="block">
+     <div class="is-size-4 has-text-weight-bold">Your Sessions</div>
+  </div>
+
+  <!-- add new entry -->
+  <div class="block">
+     <a class="button" href="[[=URL('create_session')]]">
+        <span class="icon"><i class="fa fa-plus"></i></span>
+        <span>Create New Session</span>
+     </a>
+  </div>
+
+  <!-- table -->
+  <div class="block">
+     <table class="table is-fullwidth">
+        <thead>
+           <tr>
+              <th><div class="has-text-weight-bold">Session Name</div></th>
+              <th><div class="has-text-weight-bold">School</div></th>
+              <th><div class="has-text-weight-bold">Term</div></th>
+              <th><div class="has-text-weight-bold">Class Name</div></th>
+           </tr>
+        </thead>
+        
+        <tbody>
+           [[for r in sessions:]]
+           <tr>
+              <td>[[=r["session_name"]]]</td>
+              <td>[[=r["school"]]]</td>
+              <td>[[=r["term"]]]</td>
+              <td>[[=r["class_name"]]]</td>
+           </tr>
+           [[pass]]
+        </tbody>
+     </table>
+  </div>
+</div>
+
+
+
 <style>
 [v-cloak] {
      display: none;
