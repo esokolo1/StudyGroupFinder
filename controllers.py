@@ -91,7 +91,7 @@ def create_session():
          Field('Class_Name', requires = IS_NOT_EMPTY(error_message="Error: Enter Class Name (ex. CSE 183)")),
          Field('Location', requires = IS_NOT_EMPTY(error_message="Error: Enter Location (ex. Kresge Clrm 327)")),
          Field('Description', 'text', requires = IS_NOT_EMPTY(error_message="Error: Enter Description")),
-         Field('TA_or_Student_Led', label="TA/Tutor Attendance or Student Lead", requires = IS_IN_SET(['TA/Tutor', 'Student Lead'], zero=T('choose one'), error_message="Error: Choose One")),
+         Field('TA_or_Student_Led', label="TA/Tutor Attendance or Student Led", requires = IS_IN_SET(['TA/Tutor', 'Student Led'], zero=T('choose one'), error_message="Error: Choose One")),
          Field('Maximum_Number_of_Students', requires = IS_NOT_EMPTY())],
          formstyle=FormStyleBulma,
          csrf_session=session
