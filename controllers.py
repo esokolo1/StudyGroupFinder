@@ -25,11 +25,12 @@ session, db, T, auth, and tempates are examples of Fixtures.
 Warning: Fixtures MUST be declared with @action.uses({fixtures}) else your app will result in undefined behavior
 """
 
-from py4web import action, request, abort, redirect, URL
+from py4web import action, request, abort, redirect, URL, Field
 from yatl.helpers import A
 from .common import db, session, T, cache, auth, logger, authenticated, unauthenticated, flash
 from py4web.utils.url_signer import URLSigner
 from .models import get_user_email
+from pydal.validators import *
 
 from py4web.utils.form import Form, FormStyleBulma
 
@@ -83,7 +84,58 @@ def find_session():
 @action('create_session', method=["GET", "POST"])
 @action.uses('create_session.html', db, session, auth.user, url_signer)
 def create_session():
-
-    return dict(
-        get_images_url = URL('get_images', signer=url_signer)
+    form = Form(
+        [Field('Session_Name', requires = IS_NOT_EMPTY(error_message="Error: Enter Study Group Session Name")),
+         Field('School', requires = IS_NOT_EMPTY(error_message="Error: Enter School Name")),
+         Field('Term', requires = IS_NOT_EMPTY(error_message="Error: Enter Term (ex. Spring 2023)")),
+         Field('Class_Name', requires = IS_NOT_EMPTY(error_message="Error: Enter Class Name (ex. CSE 183)")),
+         Field('Location', requires = IS_NOT_EMPTY(error_message="Error: Enter Location (ex. Kresge Clrm 327)")),
+         Field('Description', 'text', requires = IS_NOT_EMPTY(error_message="Error: Enter Description")),
+         Field('TA_or_Student_Led', label="TA/Tutor Attendance or Student Lead", requires = IS_IN_SET(['TA/Tutor', 'Student Lead'], zero=T('choose one'), error_message="Error: Choose One")),
+         Field('Maximum_Number_of_Students', requires = IS_NOT_EMPTY())],
+         formstyle=FormStyleBulma,
+         csrf_session=session
     )
+    if form.accepted:
+        id = db.session.insert(
+            session_name=form.vars["Session_Name"],
+            school=form.vars["School"],
+            term=form.vars["Term"],
+            class_name=form.vars["Class_Name"],
+            location=form.vars["Location"],
+            description=form.vars["Description"],
+            official=form.vars["TA_or_Student_Led"],
+            max_num_students=form.vars["Maximum_Number_of_Students"]
+        )
+        db.attendance.insert(
+            email=get_user_email(),
+            session_id=id
+        )
+        redirect(URL('create_session_results'))
+    return dict(form=form,
+                get_images_url = URL('get_images', signer=url_signer))
+
+    # return dict(
+    #     get_images_url = URL('get_images', signer=url_signer)
+    # )
+
+@action('create_session_results')
+@action.uses('create_session_results.html', db, session, auth.user, url_signer)
+def create_session():
+    sessions = db(db.attendance.email == get_user_email()).select().as_list()
+    for s in sessions:
+        session_info = db(db.session.id == s["session_id"]).select()
+        for info in session_info:
+            s["session_name"] = info.session_name
+            s["school"] = info.school
+            s["term"] = info.term
+            s["class_name"] = info.class_name
+    return dict(
+        # COMPLETE: return here any signed URLs you need.
+        my_callback_url = URL('my_callback', signer=url_signer),
+        get_images_url = URL('get_images', signer=url_signer),
+        sessions=sessions
+    )
+    # return dict(
+    #     get_images_url = URL('get_images', signer=url_signer)
+    # )

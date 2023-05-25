@@ -1,0 +1,93 @@
+[[extend 'layout.html']]
+<style>
+  [v-cloak] {
+       display: none;
+  }
+</style>
+
+
+<div class="section">
+    <div class="columns is-fullheight is-narrow-mobile">
+        
+        <!--navigation-->
+        <aside class="main-content column is-2 is-narrow-mobile is-fullheight is-mobile">
+          <ul class="menu-list">
+            <!--Home-->
+            <li>
+              <a href="[[=URL('index')]]" class="">
+                <span class="icon"><i class="fa fa-home"></i></span> Home
+              </a>
+            </li>
+            <!--Schedule-->
+            <li>
+              <a class="">
+                <span class="icon"><i class="fa fa-calendar"></i></span> Schedule
+              </a>
+            </li>
+            <!--Find a session-->
+            <li>
+              <a href="[[=URL('find_session')]]" class="">
+                <span class="icon"><i class="fa fa-search"></i></span> Find Session
+              </a>
+            </li>
+            <!--Create a session-->
+            <li>
+              <a href="[[=URL('create_session_results')]]" class="is-active">
+                <span class="icon"><i class="fa fa-calendar-plus-o"></i></span> Create Session
+              </a>
+            </li>
+          </ul> 
+        </aside>
+        <!--------------->
+
+
+        <div class="column create_session">
+            <!-- title -->
+            <div class="block">
+            <div class="title has-text-weight-light is-mobile">My Enrolled Sessions</div>
+            </div>
+        
+            <!-- add new entry -->
+            <div class="block">
+            <a class="button is-link is-outlined" href="[[=URL('create_session')]]">
+                <span class="icon"><i class="fa fa-plus"></i></span>
+                <span>Create New Session</span>
+            </a>
+            </div>
+        
+            <!-- table -->
+            <div class="block">
+                <table class="table is-fullwidth">
+                    <thead>
+                        <tr>
+                            <th><div class="has-text-weight-bold">Session Name</div></th>
+                            <th><div class="has-text-weight-bold">School</div></th>
+                            <th><div class="has-text-weight-bold">Term</div></th>
+                            <th><div class="has-text-weight-bold">Class Name</div></th>
+                        </tr>
+                    </thead>
+            
+                    <tbody>
+                        [[for r in sessions:]]
+                        <tr>
+                            <td>[[=r["session_name"]]]</td>
+                            <td>[[=r["school"]]]</td>
+                            <td>[[=r["term"]]]</td>
+                            <td>[[=r["class_name"]]]</td>
+                        </tr>
+                        [[pass]]
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+[[block page_scripts]]
+<script>
+  let get_images_url = "[[=XML(get_images_url)]]";
+</script>
+<!-- index.js or create another js file-->
+<script src="js/index.js"></script>
+[[end]]

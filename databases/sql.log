@@ -34,3 +34,29 @@ CREATE TABLE "images"(
     "image_url" CHAR(512)
 );
 success!
+timestamp: 2023-05-24T17:43:10.867164
+CREATE TABLE "session"(
+    "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+    "session_name" CHAR(512),
+    "owner" CHAR(512),
+    "school" CHAR(512),
+    "term" CHAR(512),
+    "open" CHAR(512),
+    "class_name" CHAR(512),
+    "location" CHAR(512),
+    "description" CHAR(512),
+    "time" CHAR(512),
+    "announcement" CHAR(512),
+    "official" CHAR(512),
+    "max_num_students" CHAR(512),
+    "num_students" CHAR(512)
+);
+success!
+timestamp: 2023-05-24T17:43:10.871807
+CREATE TABLE "attendance"(
+    "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+    "email" CHAR(512),
+    "session_id" INTEGER REFERENCES "session" ("id") ON DELETE CASCADE ON UPDATE CASCADE  
+);
+success!
+success!
