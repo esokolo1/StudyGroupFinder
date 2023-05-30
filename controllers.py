@@ -27,9 +27,10 @@ Warning: Fixtures MUST be declared with @action.uses({fixtures}) else your app w
 
 from py4web import action, request, abort, redirect, URL, Field
 from yatl.helpers import A
+
 from .common import db, session, T, cache, auth, logger, authenticated, unauthenticated, flash
 from py4web.utils.url_signer import URLSigner
-from .models import get_user_email
+from .models import get_user_email, get_user_id
 from pydal.validators import *
 
 from py4web.utils.form import Form, FormStyleBulma
@@ -38,35 +39,35 @@ from py4web.utils.form import Form, FormStyleBulma
 
 url_signer = URLSigner(session)
 
-def do_setup():
-    db(db.images).delete()
-    db.images.insert(image_url=URL('static', 'images/' + 'mainpageimage.png'))
+# def do_setup():
+#     db(db.images).delete()
+#     db.images.insert(image_url=URL('static', 'images/' + 'mainpageimage.png'))
 
-@action('setup')
-@action.uses(db)
-def setup():
-    do_setup()
-    return "ok"
+# @action('setup')
+# @action.uses(db)
+# def setup():
+#     do_setup()
+#     return "ok"
 
 
 @action('index')
 @action.uses('index.html', db, auth, url_signer)
 def index():
     # If the database is empty, sets it up.
-    if db(db.images).count() == 0:
-        do_setup()
+    # if db(db.images).count() == 0:
+    #     do_setup()
 
     return dict(
         # COMPLETE: return here any signed URLs you need.
         my_callback_url = URL('my_callback', signer=url_signer),
-        get_images_url = URL('get_images', signer=url_signer)
+        # get_images_url = URL('get_images', signer=url_signer)
     )
 
-@action('get_images')
-@action.uses(url_signer.verify(), db)
-def get_images():
-    """Returns the list of images."""
-    return dict(images=db(db.images).select().as_list())
+# @action('get_images')
+# @action.uses(url_signer.verify(), db)
+# def get_images():
+#     """Returns the list of images."""
+#     return dict(images=db(db.images).select().as_list())
 
 
 @action('find_session', method=["GET", "POST"])
@@ -77,7 +78,7 @@ def find_session():
     # We simply redirect; the insertion already happened
         # redirect(URL('index'))
     return dict(
-        get_images_url = URL('get_images', signer=url_signer)
+        # get_images_url = URL('get_images', signer=url_signer)
     )
 
 
@@ -92,7 +93,7 @@ def create_session():
          Field('Location', requires = IS_NOT_EMPTY(error_message="Error: Enter Location (ex. Kresge Clrm 327)")),
          Field('Description', 'text', requires = IS_NOT_EMPTY(error_message="Error: Enter Description")),
          Field('TA_or_Student_Led', label="TA/Tutor Attendance or Student Led", requires = IS_IN_SET(['TA/Tutor', 'Student Led'], zero=T('choose one'), error_message="Error: Choose One")),
-         Field('Maximum_Number_of_Students', requires = IS_NOT_EMPTY())],
+         Field('Maximum_Number_of_Students', requires=IS_INT_IN_RANGE(0, 1e6))],
          formstyle=FormStyleBulma,
          csrf_session=session
     )
@@ -113,11 +114,9 @@ def create_session():
         )
         redirect(URL('create_session_results'))
     return dict(form=form,
-                get_images_url = URL('get_images', signer=url_signer))
+                # get_images_url = URL('get_images', signer=url_signer)
+                )
 
-    # return dict(
-    #     get_images_url = URL('get_images', signer=url_signer)
-    # )
 
 @action('create_session_results')
 @action.uses('create_session_results.html', db, session, auth.user, url_signer)
@@ -133,9 +132,109 @@ def create_session():
     return dict(
         # COMPLETE: return here any signed URLs you need.
         my_callback_url = URL('my_callback', signer=url_signer),
-        get_images_url = URL('get_images', signer=url_signer),
-        sessions=sessions
+        # get_images_url = URL('get_images', signer=url_signer),
+        sessions=sessions,
+        url_signer = url_signer,
     )
-    # return dict(
-    #     get_images_url = URL('get_images', signer=url_signer)
-    # )
+
+
+# Edit session
+@action('edit_session/<attendance_id:int>', method=["GET", "POST"])
+@action.uses('edit_session.html', db, session, auth.user, url_signer.verify())
+def edit_session(attendance_id):
+    # only user who create this session can edit
+    assert attendance_id is not None
+    # extract attendance_row
+    get_attendance_row = db.attendance[attendance_id]
+    # session_row
+    session_row = db.session[get_attendance_row.session_id]
+
+    session_name = session_row.session_name
+    school = session_row.school
+    term = session_row.term
+    open_status = session_row.open
+    class_name = session_row.class_name
+    location = session_row.location
+    description = session_row.description
+    time = session_row.time
+    announcement = session_row.announcement
+    official = session_row.official
+    max_num_students = session_row.max_num_students
+
+    if session_row is None:
+        redirect(URL('create_session_results'))
+    
+    form = Form([
+            Field('Session_Name', requires = IS_NOT_EMPTY(error_message="Error: Enter Study Group Session Name")), 
+            Field('School', requires = IS_NOT_EMPTY(error_message="Error: Enter School Name")), 
+            Field('Term', requires = IS_NOT_EMPTY(error_message="Error: Enter Term (ex. Spring 2023)")), 
+            Field('Open', requires = IS_IN_SET([True, False]), default=True), 
+            Field('Class_Name', requires = IS_NOT_EMPTY(error_message="Error: Enter Class Name (ex. CSE 183)")), 
+            Field('Location', requires = IS_NOT_EMPTY(error_message="Error: Enter Location (ex. Kresge Clrm 327)")), 
+            Field('Description', 'text', requires = IS_NOT_EMPTY(error_message="Error: Enter Description")), 
+            Field('Time'), 
+            Field('Announcement', 'text'), 
+            Field('Official', requires = IS_IN_SET(['TA/Tutor', 'Student Led'], error_message="Error: Choose One")), 
+            Field('Maximum_Number_of_Students', requires=IS_INT_IN_RANGE(0, 1e6)),
+            ],
+        	record = dict(
+                Session_Name=session_name, 
+                School=school, 
+                Term=term, 
+                Open=open_status, 
+                Class_Name=class_name, 
+                Location=location,
+                Description=description,
+                Time=time,
+                Announcement = announcement,
+                Official = official,
+                Maximum_Number_of_Students=max_num_students),
+            deletable=False,
+            csrf_session=session,
+            formstyle=FormStyleBulma)
+    
+    if form.accepted:
+        session_row.update_record(
+            session_name = form.vars["Session_Name"], 
+            school = form.vars["School"],
+            term = form.vars["Term"],
+            open = form.vars["Open"],
+            class_name = form.vars["Class_Name"],
+            location = form.vars["Location"],
+            description = form.vars["Description"],
+            time = form.vars["Time"],
+            official = form.vars["Official"],
+            max_num_students = form.vars["Maximum_Number_of_Students"])
+        redirect(URL('create_session_results'))
+    
+    return dict(form=form, 
+    url_signer = url_signer,
+    # get_images_url = URL('get_images', signer=url_signer)
+    )
+
+# Delete Session
+@action('delete_session/<attendance_id:int>')
+@action.uses(db, session, auth.user, url_signer.verify())
+def delete_contact(attendance_id):
+    assert attendance_id is not None
+    # extract attendance_row
+    get_attendance_row = db.attendance[attendance_id]
+    session_row = db.session[get_attendance_row.session_id]
+
+    # only user who create this session can delete
+    if (session_row.owner == get_user_id()):
+        # db(db.attendance.id == attendance_id).delete()
+        db(db.session.id == get_attendance_row.session_id).delete()
+    redirect(URL('create_session_results'))
+
+
+@action('dashboard', method=["GET", "POST"])
+@action.uses('dashboard.html',db, auth, url_signer)
+def dashboard():
+    session_list = db(db.session.owner != get_user_id()).select().as_list()
+    
+    return dict(
+        # get_images_url = URL('get_images', signer=url_signer),
+        session_list = session_list,
+        url_signer = url_signer
+    )

@@ -19,7 +19,7 @@
         </li>
         <!--Schedule-->
         <li>
-          <a class="">
+          <a href="[[=URL('dashboard')]]" class="">
             <span class="icon"><i class="fa fa-calendar"></i></span> Schedule
           </a>
         </li>
@@ -53,9 +53,8 @@
 </div>
 
 [[block page_scripts]]
+<!-- Loads the index-specific js for Vue -->
 <script>
-  let get_images_url = "[[=XML(get_images_url)]]";
 </script>
-<!-- index.js or create another js file-->
 <script src="js/index.js"></script>
 [[end]]

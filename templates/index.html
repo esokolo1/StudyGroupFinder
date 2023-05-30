@@ -25,14 +25,14 @@
     </div>
 
     <!--Images-->
-    <figure v-for="img in images" class="has-text-centered">
-      <img v-bind:src="img.image_url" width="1039" height="694">
+    <figure class="has-text-centered">
+    <img src="../static/images/mainpageimage.png" width="1039" height="694">
     </figure>
 
     <!--Buttons-->
     <div class="Buttons is-flex">
       <nav>
-      <a class="button is-rounded is-large is-size-6-mobile button_list" style="left: 15%;">Dashboard</a>
+      <a href="[[=URL('dashboard')]]" class="button is-rounded is-large is-size-6-mobile button_list" style="left: 15%;">Dashboard</a>
       <a href="[[=URL('find_session')]]" class="button is-rounded is-large is-size-6-mobile button_list" style="left: 40%;">Find Session</a>
       <a href="[[=URL('create_session_results')]]" class="button is-rounded is-large is-size-6-mobile button_list" style="left: 65%;">Create Session</a>
       </nav>
@@ -47,7 +47,6 @@
 <!-- Loads the index-specific js for Vue -->
 <script>
   let my_callback_url = "[[=XML(my_callback_url)]]";
-  let get_images_url = "[[=XML(get_images_url)]]";
 </script>
 <script src="js/index.js"></script>
 [[end]]

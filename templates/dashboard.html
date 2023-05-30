@@ -20,7 +20,7 @@
             </li>
             <!--Schedule-->
             <li>
-              <a href="[[=URL('dashboard')]]" class="">
+              <a class="is-active">
                 <span class="icon"><i class="fa fa-calendar"></i></span> Schedule
               </a>
             </li>
@@ -32,7 +32,7 @@
             </li>
             <!--Create a session-->
             <li>
-              <a href="[[=URL('create_session_results')]]" class="is-active">
+              <a href="[[=URL('create_session_results')]]" class="">
                 <span class="icon"><i class="fa fa-calendar-plus-o"></i></span> Create Session
               </a>
             </li>
@@ -42,21 +42,7 @@
 
 
         <div class="column create_session">
-            <!-- title -->
-            <div class="block">
-            <div class="title has-text-weight-light is-mobile">My Sessions</div>
-            </div>
-        
-            <!-- add new entry -->
-            <div class="block">
-              <a class="button is-link is-outlined" href="[[=URL('create_session')]]">
-                  <span class="icon"><i class="fa fa-plus"></i></span>
-                  <span>Create New Session</span>
-              </a>
-            </div>
-        
-            <!-- table -->
-            <div class="block">
+            <!-- <div class="block">
                 <table class="table is-fullwidth">
                     <thead>
                         <tr>
@@ -69,7 +55,7 @@
                     </thead>
             
                     <tbody>
-                        [[for r in sessions:]]
+                        [[for r in session_list:]]
                         <tr>
                             <td>[[=r["session_name"]]]</td>
                             <td>[[=r["school"]]]</td>
@@ -87,16 +73,15 @@
                         [[pass]]
                     </tbody>
                 </table>
-            </div>
+            </div> -->
         </div>
     </div>
 </div>
 
-
 [[block page_scripts]]
 <!-- Loads the index-specific js for Vue -->
 <script>
-  let my_callback_url = "[[=XML(my_callback_url)]]";
 </script>
 <script src="js/index.js"></script>
 [[end]]
+    

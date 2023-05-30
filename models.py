@@ -28,10 +28,6 @@ def get_user_id():
 #
 ## always commit your models to avoid problems later
 
-db.define_table('images',
-                Field('image_url')
-                )
-
 db.define_table(
     'session',
     Field('session_name', requires = IS_NOT_EMPTY()),
@@ -54,7 +50,5 @@ db.define_table(
     Field('email'),
     Field('session_id', 'reference session')
 )
-
-
 
 db.commit()
