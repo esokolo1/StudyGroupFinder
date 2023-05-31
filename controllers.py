@@ -98,22 +98,12 @@ def create_session():
 @action('create_session_results')
 @action.uses('create_session_results.html', db, session, auth.user, url_signer)
 def create_session():
-    session_list = db(db.attendance.email == get_user_email()).select().as_list()
-    attendanceId = []
-    for s in session_list:
-        session_info = db(db.session.id == s["session_id"]).select()
-        for info in session_info:
-            # get attendanceId
-            attendanceId.append(s["id"])
 
     return dict(
         # COMPLETE: return here any signed URLs you need.
         my_callback_url = URL('my_callback', signer=url_signer),
-        session_list=session_list,
         url_signer = url_signer,
-
         get_session_list_url = URL('get_session_list', signer=url_signer),
-        attendanceId = attendanceId
     )
 
 
@@ -216,6 +206,7 @@ def dashboard():
 @action('get_session_list', method=["GET", "POST"])
 @action.uses(db, auth.user, url_signer.verify())
 def get_session_list():
+    # My Enrolled Sessions (vue.js)
     sessions = db(db.attendance.email == get_user_email()).select().as_list()
     for s in sessions:
         session_info = db(db.session.id == s["session_id"]).select()
