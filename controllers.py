@@ -39,46 +39,24 @@ from py4web.utils.form import Form, FormStyleBulma
 
 url_signer = URLSigner(session)
 
-# def do_setup():
-#     db(db.images).delete()
-#     db.images.insert(image_url=URL('static', 'images/' + 'mainpageimage.png'))
-
-# @action('setup')
-# @action.uses(db)
-# def setup():
-#     do_setup()
-#     return "ok"
-
 
 @action('index')
 @action.uses('index.html', db, auth, url_signer)
 def index():
-    # If the database is empty, sets it up.
-    # if db(db.images).count() == 0:
-    #     do_setup()
 
     return dict(
         # COMPLETE: return here any signed URLs you need.
         my_callback_url = URL('my_callback', signer=url_signer),
-        # get_images_url = URL('get_images', signer=url_signer)
+        get_session_list_url = URL('get_session_list', signer=url_signer)
     )
-
-# @action('get_images')
-# @action.uses(url_signer.verify(), db)
-# def get_images():
-#     """Returns the list of images."""
-#     return dict(images=db(db.images).select().as_list())
-
 
 @action('find_session', method=["GET", "POST"])
 @action.uses('find_session.html', db, session, auth.user, url_signer)
 def find_session():
-    # form = Form(db.auth_user, csrf_session=session, formstyle=FormStyleBulma)
-    # if form.accepted:
-    # We simply redirect; the insertion already happened
-        # redirect(URL('index'))
+
     return dict(
-        # get_images_url = URL('get_images', signer=url_signer)
+        get_session_list_url = URL('get_session_list', signer=url_signer),
+
     )
 
 
@@ -114,27 +92,28 @@ def create_session():
         )
         redirect(URL('create_session_results'))
     return dict(form=form,
-                # get_images_url = URL('get_images', signer=url_signer)
                 )
 
 
 @action('create_session_results')
 @action.uses('create_session_results.html', db, session, auth.user, url_signer)
 def create_session():
-    sessions = db(db.attendance.email == get_user_email()).select().as_list()
-    for s in sessions:
+    session_list = db(db.attendance.email == get_user_email()).select().as_list()
+    attendanceId = []
+    for s in session_list:
         session_info = db(db.session.id == s["session_id"]).select()
         for info in session_info:
-            s["session_name"] = info.session_name
-            s["school"] = info.school
-            s["term"] = info.term
-            s["class_name"] = info.class_name
+            # get attendanceId
+            attendanceId.append(s["id"])
+
     return dict(
         # COMPLETE: return here any signed URLs you need.
         my_callback_url = URL('my_callback', signer=url_signer),
-        # get_images_url = URL('get_images', signer=url_signer),
-        sessions=sessions,
+        session_list=session_list,
         url_signer = url_signer,
+
+        get_session_list_url = URL('get_session_list', signer=url_signer),
+        attendanceId = attendanceId
     )
 
 
@@ -209,7 +188,6 @@ def edit_session(attendance_id):
     
     return dict(form=form, 
     url_signer = url_signer,
-    # get_images_url = URL('get_images', signer=url_signer)
     )
 
 # Delete Session
@@ -220,21 +198,38 @@ def delete_contact(attendance_id):
     # extract attendance_row
     get_attendance_row = db.attendance[attendance_id]
     session_row = db.session[get_attendance_row.session_id]
-
     # only user who create this session can delete
     if (session_row.owner == get_user_id()):
-        # db(db.attendance.id == attendance_id).delete()
         db(db.session.id == get_attendance_row.session_id).delete()
+
     redirect(URL('create_session_results'))
 
 
 @action('dashboard', method=["GET", "POST"])
-@action.uses('dashboard.html',db, auth, url_signer)
+@action.uses('dashboard.html',db, auth.user, url_signer)
 def dashboard():
-    session_list = db(db.session.owner != get_user_id()).select().as_list()
     
     return dict(
-        # get_images_url = URL('get_images', signer=url_signer),
-        session_list = session_list,
-        url_signer = url_signer
+        get_session_list_url = URL('get_session_list', signer=url_signer),
+    )
+
+@action('get_session_list', method=["GET", "POST"])
+@action.uses(db, auth.user, url_signer.verify())
+def get_session_list():
+    sessions = db(db.attendance.email == get_user_email()).select().as_list()
+    for s in sessions:
+        session_info = db(db.session.id == s["session_id"]).select()
+        for info in session_info:
+            s["session_name"] = info.session_name
+            s["owner"] = info.owner
+            s["school"] = info.school
+            s["term"] = info.term
+            s["class_name"] = info.class_name
+            s["edit"] = URL('edit_session', s["id"], signer=url_signer)
+            s["delete"] = URL('delete_session', s["id"], signer=url_signer)
+    
+    return dict(
+        session_list = sessions,
+        url_signer = url_signer,
+        owner = get_user_id(),
     )

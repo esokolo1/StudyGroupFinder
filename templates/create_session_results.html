@@ -6,7 +6,7 @@
 </style>
 
 
-<div class="section">
+<div class="section" id="vue-target" v-cloak>
     <div class="columns is-fullheight is-narrow-mobile">
         
         <!--navigation-->
@@ -68,21 +68,23 @@
                         </tr>
                     </thead>
             
-                    <tbody>
-                        [[for r in sessions:]]
+                    <tbody v-for="r in session_list">
                         <tr>
-                            <td>[[=r["session_name"]]]</td>
-                            <td>[[=r["school"]]]</td>
-                            <td>[[=r["term"]]]</td>
-                            <td>[[=r["class_name"]]]</td>
-                            <td>
-                              <a class="button is-success is-outlined is-light"  href="[[=URL('edit_session', r['id'], signer=url_signer)]]">
-                                Edit
-                              </a>
-                              <a class="button is-danger is-outlined is-light" href="[[=URL('delete_session', r['id'], signer=url_signer)]]">
-                                Delete
-                              </a>
-                            </td>
+                          <td>{{r.session_name}}</td>
+                          <td>{{r.school}}</td>
+                          <td>{{r.term}}</td>
+                          <td>{{r.class_name}}</td>
+                          <td>
+                            <a v-if="r.add_edit_status" class="button is-success is-outlined is-light"  :href="r.edit">
+                              Edit
+                            </a>
+                            <a v-if="r.remove_delete_status" class="button is-danger is-outlined is-light" :href="r.delete">
+                              Delete
+                            </a>
+                            <a v-else="r.remove_delete_status" class="button is-danger is-outlined is-light">
+                              Remove
+                            </a>
+                          </td>
                         </tr>
                         [[pass]]
                     </tbody>
@@ -97,6 +99,7 @@
 <!-- Loads the index-specific js for Vue -->
 <script>
   let my_callback_url = "[[=XML(my_callback_url)]]";
+  let get_session_list_url = "[[=XML(get_session_list_url)]]";
 </script>
 <script src="js/index.js"></script>
 [[end]]
