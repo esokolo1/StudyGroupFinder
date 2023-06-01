@@ -99,7 +99,7 @@ def create_session():
 
 @action('create_session_results')
 @action.uses('create_session_results.html', db, session, auth.user, url_signer)
-def create_session():
+def create_session_results():
 
     return dict(
         # COMPLETE: return here any signed URLs you need.
@@ -238,4 +238,30 @@ def get_session_list():
         session_list = sessions,
         url_signer = url_signer,
         owner = get_user_id(),
+    )
+
+
+# @action('create_session_results')
+# @action.uses('create_session_results.html', db, session, auth.user, url_signer)
+# def create_session_results():
+
+#     return dict(
+#         # COMPLETE: return here any signed URLs you need.
+#         my_callback_url = URL('my_callback', signer=url_signer),
+#         url_signer = url_signer,
+#         get_session_list_url = URL('get_session_list', signer=url_signer),
+#     )
+
+
+@action('search_results', method=["GET", "POST"])
+@action.uses('search_results.html',db, session, auth.user, url_signer)
+def search_results():
+    # do search things to actually output results (probably in index.js too)
+    # edit find_session page to allow for user input to search 
+
+    return dict(
+        my_callback_url = URL('my_callback', signer=url_signer),
+        url_signer = url_signer,
+        get_session_list_url = URL('get_session_list', signer=url_signer),
+        # sessions=sessions
     )
