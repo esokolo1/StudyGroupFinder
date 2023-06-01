@@ -59,7 +59,7 @@
             <div class="select">
               <select> 
                 <option value="" disabled selected>Select School</option>
-              <option>With options</option>
+                <option>UC Santa Cruz</option>
               </select>
             </div>
           </div>
@@ -130,13 +130,10 @@
 
         <!--Meeting Days-->
         <div class="is-flex is-flex-direction-row is-align-items-center">
-          <label style="padding-left: 15%">Meeting Days: </label>
-          <div class="dropdown_menu" style="padding-left: 5.5rem;">
+          <label style="padding-left: 15%">Meeting Dates: </label>
+          <div class="dropdown_menu" style="padding-left: 5.0rem;">
             <div class="select">
-              <select> 
-                <option value="" disabled selected>Select Meeting Days</option>
-                <option>With options</option>
-              </select>
+              <input type="date" style="padding: 10px;" name="datetime"><br>
             </div>
           </div>
         </div>
@@ -146,14 +143,18 @@
 
         <!--Meeting Times-->
         <div class="is-flex is-flex-direction-row is-align-items-center">
-          <label style="padding-left: 15%">Meeting Times: </label>
-          <div class="dropdown_menu" style="padding-left: 5rem">
-            <div class="select">
-              <select> 
-                <option value="" disabled selected>Select Meeting Times</option>
-              <option>With options</option>
-              </select>
-            </div>
+          <label style="padding-left: 15%">Meeting Start Times: </label>
+          <div class="dropdown_menu" style="padding-left: 2.5rem">
+              <input type="time" style="padding: 10px;" name="datetime"><br>
+          </div>
+        </div>
+
+        <br>
+
+        <div class="is-flex is-flex-direction-row is-align-items-center">
+          <label style="padding-left: 15%">Meeting End Times: </label>
+          <div class="dropdown_menu" style="padding-left: 3rem">
+              <input type="time" style="padding: 10px;" name="datetime"><br>
           </div>
         </div>
        

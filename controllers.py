@@ -35,6 +35,10 @@ from pydal.validators import *
 
 from py4web.utils.form import Form, FormStyleBulma
 
+import datetime
+import pytz
+from pytz import timezone
+
 # Source: adding images - https://github.com/learn-py4web/star_ratings
 
 url_signer = URLSigner(session)
@@ -70,7 +74,9 @@ def create_session():
          Field('Class_Name', requires = IS_NOT_EMPTY(error_message="Error: Enter Class Name (ex. CSE 183)")),
          Field('Location', requires = IS_NOT_EMPTY(error_message="Error: Enter Location (ex. Kresge Clrm 327)")),
          Field('Description', 'text', requires = IS_NOT_EMPTY(error_message="Error: Enter Description")),
-         Field('Time'), 
+         Field('Date', 'date', requires=IS_DATE_IN_RANGE(format=('%Y-%m-%d'),minimum=datetime.date.today(), error_message='Error: Date cannot be in the past')), 
+         Field('Starttime', 'time', requires=IS_TIME()), 
+         Field('Endtime', 'time', requires=IS_TIME()), 
          Field('Announcement', 'text'), 
          Field('TA_or_Student_Led', label="TA/Tutor Attendance or Student Led", requires = IS_IN_SET(['TA/Tutor', 'Student Led'], zero=T('choose one'), error_message="Error: Choose One")),
          Field('Maximum_Number_of_Students', requires=IS_INT_IN_RANGE(0, 1e6))],
@@ -85,6 +91,9 @@ def create_session():
             class_name=form.vars["Class_Name"],
             location=form.vars["Location"],
             description=form.vars["Description"],
+            date=form.vars["Date"],
+            starttime=form.vars["Starttime"],
+            endtime=form.vars["Endtime"],
             official=form.vars["TA_or_Student_Led"],
             max_num_students=form.vars["Maximum_Number_of_Students"]
         )
@@ -99,7 +108,7 @@ def create_session():
 
 @action('create_session_results')
 @action.uses('create_session_results.html', db, session, auth.user, url_signer)
-def create_session():
+def create_session_results():
 
     return dict(
         # COMPLETE: return here any signed URLs you need.
@@ -127,7 +136,9 @@ def edit_session(attendance_id):
     class_name = session_row.class_name
     location = session_row.location
     description = session_row.description
-    time = session_row.time
+    date = session_row.date
+    starttime = session_row.starttime
+    endtime = session_row.endtime
     announcement = session_row.announcement
     official = session_row.official
     max_num_students = session_row.max_num_students
@@ -143,7 +154,9 @@ def edit_session(attendance_id):
             Field('Class_Name', requires = IS_NOT_EMPTY(error_message="Error: Enter Class Name (ex. CSE 183)")), 
             Field('Location', requires = IS_NOT_EMPTY(error_message="Error: Enter Location (ex. Kresge Clrm 327)")), 
             Field('Description', 'text', requires = IS_NOT_EMPTY(error_message="Error: Enter Description")), 
-            Field('Time'), 
+            Field('Date', 'date', requires=IS_DATE_IN_RANGE(format=('%Y-%m-%d'),minimum=datetime.date.today(), error_message='Error: Date cannot be in the past')), 
+            Field('Starttime', 'time', requires=IS_TIME()), 
+            Field('Endtime', 'time', requires=IS_TIME()), 
             Field('Announcement', 'text'), 
             Field('Official', requires = IS_IN_SET(['TA/Tutor', 'Student Led'], error_message="Error: Choose One")), 
             Field('Maximum_Number_of_Students', requires=IS_INT_IN_RANGE(0, 1e6)),
@@ -156,7 +169,9 @@ def edit_session(attendance_id):
                 Class_Name=class_name, 
                 Location=location,
                 Description=description,
-                Time=time,
+                Date=date,
+                Starttime=starttime,
+                Endtime=endtime,
                 Announcement = announcement,
                 Official = official,
                 Maximum_Number_of_Students=max_num_students),
@@ -173,7 +188,9 @@ def edit_session(attendance_id):
             class_name = form.vars["Class_Name"],
             location = form.vars["Location"],
             description = form.vars["Description"],
-            time = form.vars["Time"],
+            date=form.vars["Date"],
+            starttime=form.vars["Starttime"],
+            endtime=form.vars["Endtime"],
             official = form.vars["Official"],
             max_num_students = form.vars["Maximum_Number_of_Students"])
         redirect(URL('create_session_results'))
@@ -230,6 +247,19 @@ def get_session_list():
             s["owner"] = info.owner
             s["school"] = info.school
             s["term"] = info.term
+
+            s["location"] = info.location
+            s["description"] = info.description
+            s["date"] = info.date
+            s["starttime"] = info.starttime
+            s["endtime"] = info.endtime
+
+            # convert string Date to datetime object
+            convertDate = datetime.datetime.strptime(s["date"], '%Y-%m-%d')
+            # change date format
+            changeDateFormat = convertDate.strftime("%Y%m%d")
+            # s["calendar"] = 'https://calendar.google.com/calendar/render?action=TEMPLATE&text=' + s["session_name"] + '&details=' + s["description"] + '&dates=' + changeDateFormat + 'T' + s["starttime"]+ '/' + changeDateFormat + 'T' + s["endtime"] + '&location=' + s["location"]
+
             s["class_name"] = info.class_name
             s["edit"] = URL('edit_session', s["id"], signer=url_signer)
             s["delete"] = URL('delete_session', s["id"], signer=url_signer)

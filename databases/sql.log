@@ -60,3 +60,59 @@ CREATE TABLE "attendance"(
 );
 success!
 success!
+timestamp: 2023-05-31T22:52:10.703932
+ALTER TABLE "session" ADD "date" CHAR(512);
+success!
+timestamp: 2023-05-31T22:59:55.474829
+ALTER TABLE "session" ADD "starttime" CHAR(512);
+timestamp: 2023-05-31T22:59:55.476648
+ALTER TABLE "session" ADD "endtime" CHAR(512);
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
