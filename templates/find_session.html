@@ -63,10 +63,11 @@
           <div class="dropdown_menu" style="padding-left: 8.5rem">
             <!-- <input class="input" type='text' placeholder="Text input"/> -->
             <div class="select">
-              <select>
+              <select v-model="school">
                 <option value="" disabled selected>Select School</option>
                 <option>UC Santa Cruz</option>
                 <option>Other</option>
+                <option>All</option>
               </select>
             </div>
           </div>
@@ -80,12 +81,13 @@
           <div class="dropdown_menu" style="padding-left: 9.3rem">
             <!-- <input class="input" type='text' placeholder="Text input"/> -->
             <div class="select">
-              <select>
+              <select v-model="term">
                 <option value="" disabled selected>Select Term</option>
                 <option>Spring 2023</option>
                 <option>Summer 2023</option>
                 <option>Fall 2023</option>
                 <option>Winter 2024</option>
+                <option>All</option>
               </select>
             </div>
           </div>
@@ -98,9 +100,11 @@
           <label style="padding-left: 15%">Status: </label>
           <div class="dropdown_menu" style="padding-left: 8.7rem">
             <div class="select">
-              <select>
+              <select v-model="status">
                 <option value="" disabled selected>Select Status</option>
-                <option>With options</option>
+                <option>Open</option>
+                <option>Closed</option>
+                <option>All</option>
               </select>
             </div>
           </div>
@@ -112,12 +116,11 @@
         <div class="is-flex is-flex-direction-row is-align-items-center">
           <label style="padding-left: 15%">Class Name: </label>
           <div class="dropdown_menu" style="padding-left: 6.3rem">
-            <div class="select">
-              <select>
+            <input v-model="class_name" class="input" type="text" />
+            <!-- <select>
                 <option value="" disabled selected>Select Class Name</option>
                 <option>With options</option>
-              </select>
-            </div>
+              </select> -->
           </div>
         </div>
 
@@ -127,12 +130,13 @@
         <div class="is-flex is-flex-direction-row is-align-items-center">
           <label style="padding-left: 15%">Location: </label>
           <div class="dropdown_menu" style="padding-left: 7.8rem">
-            <div class="select">
+            <input v-model="location" class="input" type="text" />
+            <!-- <div class="select">
               <select>
                 <option value="" disabled selected>Select Location</option>
                 <option>With options</option>
               </select>
-            </div>
+            </div> -->
           </div>
         </div>
 
@@ -142,10 +146,16 @@
         <div class="is-flex is-flex-direction-row is-align-items-center">
           <label style="padding-left: 15%">Meeting Days: </label>
           <div class="dropdown_menu" style="padding-left: 5.5rem">
-            <div class="select">
-              <select>
+            <div class="select is-multiple">
+              <select multiple v-model="meeting_days">
                 <option value="" disabled selected>Select Meeting Days</option>
-                <option>With options</option>
+                <option>Monday</option>
+                <option>Tuesday</option>
+                <option>Wednesday</option>
+                <option>Thursday</option>
+                <option>Friday</option>
+                <option>Saturday</option>
+                <option>Sunday</option>
               </select>
             </div>
           </div>
@@ -157,12 +167,28 @@
         <div class="is-flex is-flex-direction-row is-align-items-center">
           <label style="padding-left: 15%">Meeting Times: </label>
           <div class="dropdown_menu" style="padding-left: 5rem">
-            <div class="select">
+            <div class="column is-6">
+              <div class="field is-grouped">
+                <div class="field-label">from:</div>
+                <div class="field">
+                  <input
+                    v-model="meeting_time_from"
+                    type="time"
+                    class="input"
+                  />
+                </div>
+                <div class="field-label">to:</div>
+                <div class="field">
+                  <input v-model="meeting_time_to" type="time" class="input" />
+                </div>
+              </div>
+            </div>
+            <!-- <div class="select">
               <select>
                 <option value="" disabled selected>Select Meeting Times</option>
                 <option>With options</option>
               </select>
-            </div>
+            </div> -->
           </div>
         </div>
 
@@ -173,10 +199,11 @@
           <label style="padding-left: 15%">TA/Tutor Attendance: </label>
           <div class="dropdown_menu" style="padding-left: 2.4rem">
             <div class="select">
-              <select>
+              <select v-model="ta_tutor">
                 <option value="" disabled selected>Select One</option>
                 <option>TA/Tutor</option>
                 <option>Student Led</option>
+                <option>All</option>
               </select>
             </div>
           </div>
@@ -196,8 +223,9 @@
         class="Buttons is-flex is-justify-content-flex-end"
         style="padding-right: 15%"
       >
+        <!-- href="[[=URL('search_results')]]" -->
         <a
-          href="[[=URL('search_results')]]"
+          @click="search"
           class="button is-rounded is-link is-outlined is-size-6"
           >Search</a
         >
@@ -209,7 +237,9 @@
 [[block page_scripts]]
 <script>
   let get_session_list_url = "[[=XML(get_session_list_url)]]";
+  let get_search_results_url = "[[=XML(get_search_results_url)]]";
 </script>
 <!-- index.js or create another js file-->
-<script src="js/index.js"></script>
+<!-- <script src="js/index.js"></script> -->
+<script src="js/find_session.js"></script>
 [[end]]

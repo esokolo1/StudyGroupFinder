@@ -48,13 +48,15 @@
       </ul>
     </aside>
     <!---->
+    <div v-for="result in session_list">{{result}}</div>
   </div>
 </div>
 
 [[block page_scripts]]
 <script>
   let get_session_list_url = "[[=XML(get_session_list_url)]]";
+  let get_search_results_url = "[[=XML(get_search_results_url)]]";
 </script>
 <!-- index.js or create another js file-->
-<script src="js/index.js"></script>
+<script src="js/find_session.js"></script>
 [[end]]
