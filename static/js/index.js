@@ -47,11 +47,17 @@ let init = (app) => {
         
     }
 
+    app.enroll_session = function() {
+        console.log('abc');
+
+    }
+
 
     // This contains all the methods.
     app.methods = {
         // Complete as you see fit.
         load_page: app.load_page,
+        enroll_session: app.enroll_session,
     };
 
     // This creates the Vue instance.

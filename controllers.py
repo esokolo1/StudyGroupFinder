@@ -70,6 +70,8 @@ def create_session():
          Field('Class_Name', requires = IS_NOT_EMPTY(error_message="Error: Enter Class Name (ex. CSE 183)")),
          Field('Location', requires = IS_NOT_EMPTY(error_message="Error: Enter Location (ex. Kresge Clrm 327)")),
          Field('Description', 'text', requires = IS_NOT_EMPTY(error_message="Error: Enter Description")),
+         Field('Time'), 
+         Field('Announcement', 'text'), 
          Field('TA_or_Student_Led', label="TA/Tutor Attendance or Student Led", requires = IS_IN_SET(['TA/Tutor', 'Student Led'], zero=T('choose one'), error_message="Error: Choose One")),
          Field('Maximum_Number_of_Students', requires=IS_INT_IN_RANGE(0, 1e6))],
          formstyle=FormStyleBulma,
@@ -198,9 +200,22 @@ def delete_contact(attendance_id):
 @action('dashboard', method=["GET", "POST"])
 @action.uses('dashboard.html',db, auth.user, url_signer)
 def dashboard():
+    # display all sessions that user who is logged in NOT attending
+    # sessions = db(db.attendance.email != get_user_email()).select().as_list()
+    # for s in sessions:
+    #     session_info = db(db.session.id == s["session_id"]).select()
+    #     for info in session_info:
+    #         s["session_name"] = info.session_name
+    #         s["owner"] = info.owner
+    #         s["school"] = info.school
+    #         s["term"] = info.term
+    #         s["class_name"] = info.class_name
+    #         s["edit"] = URL('edit_session', s["id"], signer=url_signer)
+    #         s["delete"] = URL('delete_session', s["id"], signer=url_signer)
     
     return dict(
         get_session_list_url = URL('get_session_list', signer=url_signer),
+        # sessions=sessions
     )
 
 @action('get_session_list', method=["GET", "POST"])
