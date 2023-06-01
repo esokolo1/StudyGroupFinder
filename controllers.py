@@ -56,6 +56,7 @@ def find_session():
 
     return dict(
         get_session_list_url = URL('get_session_list', signer=url_signer),
+        get_search_results_url = URL('get_search_results', signer=url_signer),
 
     )
 
@@ -253,14 +254,26 @@ def get_session_list():
 #     )
 
 
+@action('get_search_results',method=["POST"])
+@action.uses(db, session, url_signer.verify())
+def get_search_results():
+    school = request.json.get('school')
+    # console.log(school)
+    # sessions = db(db.session.school == school & ).select().as_list()
+    sessions = db(db.session.school == school).select().as_list()
+    ## continue selecting based on all the conditions provided. 
+    return dict(
+        session_list=sessions,
+    )
+
 @action('search_results', method=["GET", "POST"])
 @action.uses('search_results.html',db, session, auth.user, url_signer)
 def search_results():
     # do search things to actually output results (probably in index.js too)
     # edit find_session page to allow for user input to search 
-
+    # if
     return dict(
-        my_callback_url = URL('my_callback', signer=url_signer),
+        get_search_results_url = URL('get_search_results', signer=url_signer),
         url_signer = url_signer,
         get_session_list_url = URL('get_session_list', signer=url_signer),
         # sessions=sessions
