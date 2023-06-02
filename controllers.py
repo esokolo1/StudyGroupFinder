@@ -36,6 +36,7 @@ from pydal.validators import *
 from py4web.utils.form import Form, FormStyleBulma
 
 import datetime
+# from datetime import datetime
 import pytz
 from pytz import timezone
 
@@ -54,19 +55,6 @@ def index():
         get_session_list_url = URL('get_session_list', signer=url_signer)
     )
 
-<<<<<<< HEAD
-@action('find_session', method=["GET", "POST"])
-@action.uses('find_session.html', db, session, auth.user, url_signer)
-def find_session():
-
-    return dict(
-        get_session_list_url = URL('get_session_list', signer=url_signer),
-        get_search_results_url = URL('get_search_results', signer=url_signer),
-
-    )
-
-=======
->>>>>>> searchpage
 
 @action('create_session', method=["GET", "POST"])
 @action.uses('create_session.html', db, session, auth.user, url_signer)
@@ -106,8 +94,7 @@ def create_session():
             session_id=id
         )
         redirect(URL('create_session_results'))
-    return dict(form=form,
-                )
+    return dict(form=form)
 
 
 @action('create_session_results')
@@ -274,45 +261,6 @@ def get_session_list():
         owner = get_user_id(),
     )
 
-<<<<<<< HEAD
-
-# @action('create_session_results')
-# @action.uses('create_session_results.html', db, session, auth.user, url_signer)
-# def create_session_results():
-
-#     return dict(
-#         # COMPLETE: return here any signed URLs you need.
-#         my_callback_url = URL('my_callback', signer=url_signer),
-#         url_signer = url_signer,
-#         get_session_list_url = URL('get_session_list', signer=url_signer),
-#     )
-
-
-@action('get_search_results',method=["POST"])
-@action.uses(db, session, url_signer.verify())
-def get_search_results():
-    school = request.json.get('school')
-    # console.log(school)
-    # sessions = db(db.session.school == school & ).select().as_list()
-    sessions = db(db.session.school == school).select().as_list()
-    ## continue selecting based on all the conditions provided. 
-    return dict(
-        session_list=sessions,
-    )
-
-@action('search_results', method=["GET", "POST"])
-@action.uses('search_results.html',db, session, auth.user, url_signer)
-def search_results():
-    # do search things to actually output results (probably in index.js too)
-    # edit find_session page to allow for user input to search 
-    # if
-    return dict(
-        get_search_results_url = URL('get_search_results', signer=url_signer),
-        url_signer = url_signer,
-        get_session_list_url = URL('get_session_list', signer=url_signer),
-        # sessions=sessions
-    )
-=======
 @action('find_session', method=["GET", "POST"])
 @action.uses('find_session.html', db, session, auth.user, url_signer)
 def find_session():
@@ -327,6 +275,19 @@ def find_session():
 @action.uses(db, auth.user, url_signer.verify())
 def search():
     school = request.params.get("school") # what I typed in search bar
+    term = request.params.get("term")
+    status = request.params.get("status")
+    open_status = "True"
+    if status == "Open": 
+        open_status = "True"
+    elif status == "Closed":
+        open_status = "False"
+    class_name = request.params.get("class_name")
+    location = request.params.get("location")
+    meeting_date = request.params.get("meeting_date")
+    meeting_start = request.params.get("meeting_start")
+    meeting_end = request.params.get("meeting_end")
+    ta = request.params.get("ta")
 
     # ONLY display sessions that user who is logged in NOT ENROLLED YET
     session_list = db(db.attendance.email != get_user_email()).select().as_list()
@@ -346,6 +307,8 @@ def search():
             s["endtime"] = info.endtime
             s["official"] = info.official
 
+            s["open"] = info.open
+
     # search results
     results = []
     for r in session_list:
@@ -355,9 +318,68 @@ def search():
         # .lower() -> convert search input to lowercase
 
         # ADD CODE HERE (term, status, classname, location, meeting date, starttime, endtime, attendance)
+
+        if (len(str(meeting_start)) > 0):
+            start_hr = int(meeting_start[:2])
+            start_m = int(meeting_start[3:5]);
+        official_start_hr = int((r['starttime'])[:2])
+        official_start_m = int(r['starttime'][3:5])
+
+        if (len(str(meeting_end)) > 0):
+            print("valid end")
+            end_hr = int(meeting_end[:2])
+            end_m = int(meeting_end[3:5])
+        # print(len(str(meeting_end)))
+        official_end_hr = int(r['endtime'][:2])
+        official_end_m = int(r['endtime'][3:5])
+
+        actual_end_m = official_end_m
+        if official_end_m == 0:
+            actual_end_m = 60
+
+        print(meeting_end)
+        print(r['endtime'])
+        print((end_hr >= official_start_hr))
+        print((end_m >= official_start_m))
+        print((end_hr >= official_start_hr) & (end_m >= official_start_m))
+
         if (str(school).lower() in r['school'].lower()):
-            results.append(r)
+            if (str(term).lower() in r['term'].lower()):
+                if(open_status == r['open']):
+                    if (str(class_name).lower() in r['class_name'].lower()):
+                        if (str(location).lower() in r['location'].lower()):
+                            if (str(meeting_date).lower() in r['date'].lower()):
+                                # if there is a start and end time 
+                                if ((len(str(meeting_start)) > 0) & (len(str(meeting_end)) > 0)):
+                                     if ((start_hr >= official_start_hr) & (start_m >= official_start_m)):
+                                         # checks that choosen start time is before the official meetings end time
+                                        if ((start_hr < official_end_hr) & (start_m <= actual_end_m)):
+                                            # checks that choosen end time is before or same as official end time
+                                            if ((end_hr <= official_end_hr) & (end_m <= actual_end_m)):
+                                                # checks that choosen end time is after the official start time 
+                                                if ((end_hr >= official_start_hr) & (end_m >= official_start_m)):
+                                                    if(str(ta) in r['official']):
+                                                        results.append(r)
+                                # if there is a start time 
+                                elif ((len(str(meeting_start)) > 0)):
+                                    # checks that choosen start time is same or after official meetings start time
+                                    if ((start_hr >= official_start_hr) & (start_m >= official_start_m)):
+                                         # checks that choosen start time is before the official meetings end time
+                                        if ((start_hr < official_end_hr) & (start_m <= actual_end_m)):
+                                            if(str(ta) in r['official']):
+                                                    results.append(r)
+                                # if there is an end time 
+                                elif (len(str(meeting_end)) > 0):
+                                        # checks that choosen end time is before or same as official end time 
+                                        if ((end_hr <= official_end_hr) & (end_m <= actual_end_m)):
+                                            # checks that choosen end time is after the official start time 
+                                            if ((end_hr >= official_start_hr) & (end_m >= official_start_m)):
+                                                if(str(ta) in r['official']):
+                                                    results.append(r)
+                                # if there are no start or end time 
+                                else:
+                                    if(str(ta) in r['official']):
+                                        results.append(r)
     
     return dict(results=results,
                 session_list=session_list)
->>>>>>> searchpage
