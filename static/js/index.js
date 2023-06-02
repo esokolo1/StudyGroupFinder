@@ -13,6 +13,10 @@ let init = (app) => {
         add_edit_status: false,
         remove_delete_status: false,
         session_list: [],
+
+        show_search_results_page: false,
+        query: "",
+        results: [],
     };
 
     app.enumerate = (a) => {
@@ -21,6 +25,24 @@ let init = (app) => {
         a.map((e) => {e._idx = k++;});
         return a;
     };
+
+    // SEARCH FUNCTION
+    app.search = function() {
+        // sends query to server
+        axios.get(search_url, {params: {school: app.vue.query}})
+        .then(function(result) {
+            // Console log display what user typed in search bar
+            console.log('hello', app.vue.query);
+
+            app.vue.results = result.data.results;
+            app.vue.results = app.enumerate(app.vue.results);
+            console.log('results', app.vue.results);
+
+            // after we find the search results, set the show_search_results_page = true
+            app.vue.show_search_results_page = true;
+        });        
+    }
+
 
     app.load_page = function() {
         axios.get(get_session_list_url)
@@ -42,9 +64,7 @@ let init = (app) => {
                     }
                     
                 }
-            });
-
-        
+            });        
     }
 
     app.enroll_session = function() {
@@ -58,6 +78,7 @@ let init = (app) => {
         // Complete as you see fit.
         load_page: app.load_page,
         enroll_session: app.enroll_session,
+        search: app.search,
     };
 
     // This creates the Vue instance.

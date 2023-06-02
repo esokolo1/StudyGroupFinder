@@ -65,6 +65,7 @@
                             <th><div class="has-text-weight-bold">Term</div></th>
                             <th><div class="has-text-weight-bold">Class Name</div></th>
                             <th></th>
+                            <th></th>
                         </tr>
                     </thead>
             
@@ -84,6 +85,15 @@
                             <a v-else="r.remove_delete_status" class="button is-danger is-outlined is-light">
                               Remove
                             </a>
+                          </td>
+                          <td>
+                            <!-- <a :href="r.calendar">Add to Google Calendar</a> -->
+                            <!-- <a href="http://www.google.com/calendar/render?
+                                action=TEMPLATE
+                                &text=r.session_name
+                                &dates=20220305T103000/20220305T103000
+                                &details=r.description
+                                &location=r.location">Add to my calendar</a> -->
                           </td>
                         </tr>
                         [[pass]]

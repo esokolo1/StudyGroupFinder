@@ -38,7 +38,9 @@ db.define_table(
     Field('class_name', requires = IS_NOT_EMPTY()),
     Field('location', requires = IS_NOT_EMPTY()),
     Field('description', requires = IS_NOT_EMPTY()),
-    Field('time', requires = IS_NOT_EMPTY()),
+    Field('date', requires = IS_NOT_EMPTY()),
+    Field('starttime', requires = IS_NOT_EMPTY()),
+    Field('endtime', requires = IS_NOT_EMPTY()),
     Field('announcement', default=""),
     Field('official'), # string, saying TA or student led
     Field('max_num_students', requires = IS_NOT_EMPTY()),
