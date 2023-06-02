@@ -1,0 +1,257 @@
+[[extend 'layout.html']]
+
+<style>
+  [v-cloak] {
+    display: none;
+  }
+</style>
+<style>
+  select,
+  input {
+    width: 400px;
+    box-sizing: border-box;
+  }
+</style>
+
+<div class="section" id="vue-target" v-cloak>
+  <div class="columns is-fullheight is-narrow-mobile">
+    <!--Navigation-->
+    <aside
+      class="main-content column is-2 is-narrow-mobile is-fullheight is-mobile"
+    >
+      <ul class="menu-list">
+        <!--Home-->
+        <li>
+          <a href="[[=URL('index')]]" class="">
+            <span class="icon"><i class="fa fa-home"></i></span> Home
+          </a>
+        </li>
+        <!--Schedule-->
+        <li>
+          <a href="[[=URL('dashboard')]]" class="">
+            <span class="icon"><i class="fa fa-calendar"></i></span> Schedule
+          </a>
+        </li>
+        <!--Find a session-->
+        <li>
+          <a href="[[=URL('find_session')]]" class="is-active">
+            <span class="icon"><i class="fa fa-search"></i></span> Find Session
+          </a>
+        </li>
+        <!--Create a session-->
+        <li>
+          <a href="[[=URL('create_session_results')]]" class="">
+            <span class="icon"><i class="fa fa-calendar-plus-o"></i></span>
+            Create Session
+          </a>
+        </li>
+      </ul>
+    </aside>
+    <!---->
+
+    <!--Find Study Group Session (Search Page)-->
+    <div
+      class="column find_session"
+      id="vue-target"
+      v-cloak
+      v-if="!show_search_results_page"
+    >
+      <h1 class="title has-text-weight-light is-mobile">
+        Find Group Study Sessions
+      </h1>
+      <div class="find_session_inputs">
+        <br />
+        <!--School-->
+        <div class="is-flex is-flex-direction-row is-align-items-center">
+          <label style="padding-left: 15%">School:</label>
+          <div class="dropdown_menu" style="padding-left: 8.5rem">
+            <input
+              class="input"
+              type="text"
+              size="43"
+              v-model="query"
+              placeholder="Type School Name"
+            />
+          </div>
+        </div>
+        <br />
+        <!--Term-->
+        <div class="is-flex is-flex-direction-row is-align-items-center">
+          <label style="padding-left: 15%">Term:</label>
+          <div class="dropdown_menu" style="padding-left: 9.3rem">
+            <input
+              class="input"
+              type="text"
+              size="43"
+              placeholder="Type Term"
+              v-model="term"
+            />
+          </div>
+        </div>
+        <br />
+        <!--Status-->
+        <div class="is-flex is-flex-direction-row is-align-items-center">
+          <label style="padding-left: 15%">Status: </label>
+          <div class="dropdown_menu" style="padding-left: 8.7rem">
+            <div class="select">
+              <select v-model="status">
+                <option value="" disabled selected>Select Status</option>
+                <option>Open</option>
+                <option>Closed</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <br />
+        <!--Class Name-->
+        <div class="is-flex is-flex-direction-row is-align-items-center">
+          <label style="padding-left: 15%">Class Name: </label>
+          <div class="dropdown_menu" style="padding-left: 6.3rem">
+            <input
+              class="input"
+              type="text"
+              size="43"
+              placeholder="Type Class Name"
+              v-model="class_name"
+            />
+          </div>
+        </div>
+        <br />
+        <!--Location-->
+        <div class="is-flex is-flex-direction-row is-align-items-center">
+          <label style="padding-left: 15%">Location: </label>
+          <div class="dropdown_menu" style="padding-left: 7.8rem">
+            <input
+              class="input"
+              type="text"
+              size="43"
+              placeholder="Type Location"
+              v-model="location"
+            />
+          </div>
+        </div>
+        <br />
+        <!--Meeting Days-->
+        <div class="is-flex is-flex-direction-row is-align-items-center">
+          <label style="padding-left: 15%">Meeting Dates: </label>
+          <div class="dropdown_menu" style="padding-left: 5rem">
+            <div class="select">
+              <input
+                v-model="meeting_date"
+                type="date"
+                style="padding: 10px"
+                name="datetime"
+              /><br />
+            </div>
+          </div>
+        </div>
+        <br />
+        <!--Meeting Start Times-->
+        <div class="is-flex is-flex-direction-row is-align-items-center">
+          <label style="padding-left: 15%">Meeting Start Times: </label>
+          <div class="dropdown_menu" style="padding-left: 2.5rem">
+            <input
+              v-model="meeting_start"
+              type="time"
+              style="padding: 10px"
+              name="datetime"
+            /><br />
+          </div>
+        </div>
+        <br />
+        <!--Meeting End Times-->
+        <div class="is-flex is-flex-direction-row is-align-items-center">
+          <label style="padding-left: 15%">Meeting End Times: </label>
+          <div class="dropdown_menu" style="padding-left: 3rem">
+            <input
+              v-model="meeting_end"
+              type="time"
+              style="padding: 10px"
+              name="datetime"
+            /><br />
+          </div>
+        </div>
+        <br />
+        <!--TA Tutor-->
+        <div class="is-flex is-flex-direction-row is-align-items-center">
+          <label style="padding-left: 15%">TA/Tutor Attendance: </label>
+          <div class="dropdown_menu" style="padding-left: 2.4rem">
+            <div class="select">
+              <select v-model="ta">
+                <option value="" disabled selected>Select One</option>
+                <option>TA/Tutor</option>
+                <option>Student Led</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+      <br />
+      <br />
+      <!--Search Button-->
+      <div
+        class="Buttons is-flex is-justify-content-flex-end"
+        style="padding-right: 15%"
+      >
+        <a
+          class="button is-rounded is-link is-outlined is-size-6"
+          @click="search"
+          >Search</a
+        >
+      </div>
+    </div>
+
+    <!--Search Results Page-->
+    <div class="column search_results" v-else="show_search_results_page">
+      <h1 class="title has-text-weight-light is-mobile">Search Results</h1>
+      <div class="block">
+        <table class="table is-fullwidth">
+          <thead>
+            <tr>
+              <th><div class="has-text-weight-bold">Session Name</div></th>
+              <th><div class="has-text-weight-bold">School</div></th>
+              <th><div class="has-text-weight-bold">Term</div></th>
+              <th><div class="has-text-weight-bold">Class Name</div></th>
+              <th><div class="has-text-weight-bold">Location</div></th>
+              <th><div class="has-text-weight-bold">Date</div></th>
+              <th><div class="has-text-weight-bold">Start Time</div></th>
+              <th><div class="has-text-weight-bold">End Time</div></th>
+              <th><div class="has-text-weight-bold">Description</div></th>
+              <th><div class="has-text-weight-bold">TA/Student Led</div></th>
+              <th></th>
+            </tr>
+          </thead>
+
+          <tbody v-for="r in results">
+            <tr>
+              <td>{{r.session_name}}</td>
+              <td>{{r.school}}</td>
+              <td>{{r.term}}</td>
+              <td>{{r.class_name}}</td>
+              <td>{{r.location}}</td>
+              <td>{{r.date}}</td>
+              <td>{{r.starttime}}</td>
+              <td>{{r.endtime}}</td>
+              <td>{{r.description}}</td>
+              <td>{{r.official}}</td>
+              <td>
+                <a class="button is-success is-outlined is-light"> Enroll </a>
+              </td>
+            </tr>
+            [[pass]]
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+[[block page_scripts]]
+<script>
+  let get_session_list_url = "[[=XML(get_session_list_url)]]";
+  let search_url = "[[=XML(search_url)]]";
+</script>
+<!-- index.js or create another js file-->
+<script src="js/index.js"></script>
+<!-- <script src="js/find_session.js"></script> -->
+[[end]]

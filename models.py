@@ -16,6 +16,11 @@ def get_username():
 def get_time():
     return datetime.datetime.utcnow()
 
+# added
+def get_user_id():
+    return auth.current_user.get('id') if auth.current_user else None
+
+
 
 ### Define your table below
 #
@@ -25,18 +30,20 @@ def get_time():
 
 db.define_table(
     'session',
-    Field('session_name'),
-    Field('owner'),
-    Field('school'),
-    Field('term'),
+    Field('session_name', requires = IS_NOT_EMPTY()),
+    Field('owner', 'reference auth_user', default=get_user_id),
+    Field('school', requires = IS_NOT_EMPTY()),
+    Field('term', requires = IS_NOT_EMPTY()),
     Field('open', default=True),
-    Field('class_name'),
-    Field('location'),
-    Field('description'),
-    Field('time'),
+    Field('class_name', requires = IS_NOT_EMPTY()),
+    Field('location', requires = IS_NOT_EMPTY()),
+    Field('description', requires = IS_NOT_EMPTY()),
+    Field('date', requires = IS_NOT_EMPTY()),
+    Field('starttime', requires = IS_NOT_EMPTY()),
+    Field('endtime', requires = IS_NOT_EMPTY()),
     Field('announcement', default=""),
     Field('official'), # string, saying TA or student led
-    Field('max_num_students'),
+    Field('max_num_students', requires = IS_NOT_EMPTY()),
     Field('num_students', default=1)
 )
 

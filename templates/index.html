@@ -50,9 +50,40 @@
 }
 </style>
 
+<style>
+  .button_list{
+    background-color: #DDE9FF; 
+    position: absolute; 
+    top: 55%;
+    box-shadow: 3px 3px #888888;
+  }
+</style>
 
 <div class="section" id="vue-target" v-cloak>
   <!-- Put here your Vue.js template -->
+  <div class="main_page is-mobile" style="position: relative">
+    <!--Title-->
+    <div class="title">
+      <h1 class="is-size-2 has-text-weight-light is-mobile" style="position: absolute; left: 5%;">Welcome to</h1>
+      <h1 class="title is-1 has-text-weight-medium is-mobile" style="position: absolute; top: 20%; left: 20%; letter-spacing: 0.2em;">Study Group Finder</h1>
+    </div>
+
+    <!--Images-->
+    <figure class="has-text-centered">
+    <img src="../static/images/mainpageimage.png" width="1039" height="694">
+    </figure>
+
+    <!--Buttons-->
+    <div class="Buttons is-flex">
+      <nav>
+      <a href="[[=URL('dashboard')]]" class="button is-rounded is-large is-size-6-mobile button_list" style="left: 15%;">Dashboard</a>
+      <a href="[[=URL('find_session')]]" class="button is-rounded is-large is-size-6-mobile button_list" style="left: 40%;">Find Session</a>
+      <a href="[[=URL('create_session_results')]]" class="button is-rounded is-large is-size-6-mobile button_list" style="left: 65%;">Create Session</a>
+      </nav>
+    </div>
+
+  </div>
+
 </div>
 
 
@@ -60,6 +91,7 @@
 <!-- Loads the index-specific js for Vue -->
 <script>
   let my_callback_url = "[[=XML(my_callback_url)]]";
+  let get_session_list_url = "[[=XML(get_session_list_url)]]";
 </script>
 <script src="js/index.js"></script>
 [[end]]
