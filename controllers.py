@@ -54,15 +54,6 @@ def index():
         get_session_list_url = URL('get_session_list', signer=url_signer)
     )
 
-@action('find_session', method=["GET", "POST"])
-@action.uses('find_session.html', db, session, auth.user, url_signer)
-def find_session():
-
-    return dict(
-        get_session_list_url = URL('get_session_list', signer=url_signer),
-
-    )
-
 
 @action('create_session', method=["GET", "POST"])
 @action.uses('create_session.html', db, session, auth.user, url_signer)
@@ -269,3 +260,51 @@ def get_session_list():
         url_signer = url_signer,
         owner = get_user_id(),
     )
+
+@action('find_session', method=["GET", "POST"])
+@action.uses('find_session.html', db, session, auth.user, url_signer)
+def find_session():
+
+    return dict(
+        get_session_list_url = URL('get_session_list', signer=url_signer),
+        search_url=URL('search', signer=url_signer),
+    )
+
+
+@action('search')
+@action.uses(db, auth.user, url_signer.verify())
+def search():
+    school = request.params.get("school") # what I typed in search bar
+
+    # ONLY display sessions that user who is logged in NOT ENROLLED YET
+    session_list = db(db.attendance.email != get_user_email()).select().as_list()
+    for s in session_list:
+        session_info = db(db.session.id == s["session_id"]).select()
+        for info in session_info:
+            s["session_name"] = info.session_name
+            s["owner"] = info.owner
+            s["school"] = info.school
+            s["term"] = info.term
+            s["class_name"] = info.class_name
+
+            s["location"] = info.location
+            s["description"] = info.description
+            s["date"] = info.date
+            s["starttime"] = info.starttime
+            s["endtime"] = info.endtime
+            s["official"] = info.official
+
+    # search results
+    results = []
+    for r in session_list:
+        # str(school) -> what user typed in search bar
+        # r["school"] -> iterate through list of sessions, only extract school name
+        # if r['school'] contains what user typed in search bar, append to results list
+        # .lower() -> convert search input to lowercase
+
+        # ADD CODE HERE (term, status, classname, location, meeting date, starttime, endtime, attendance)
+        if (str(school).lower() in r['school'].lower()):
+            results.append(r)
+    
+    return dict(results=results,
+                session_list=session_list)
