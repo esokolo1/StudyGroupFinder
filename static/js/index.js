@@ -67,8 +67,17 @@ let init = (app) => {
             });        
     }
 
-    app.enroll_session = function() {
-        console.log('abc');
+    app.enroll_session = function(session_id) {
+        // console.log('abc', session_id);
+        axios.post(enroll_session_url,
+            {
+                // get session id 
+                session_id: session_id
+
+            }).then(function(response) {
+                app.vue.results = response.data.results;
+                app.search();
+            });
 
     }
 

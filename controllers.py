@@ -268,6 +268,7 @@ def find_session():
     return dict(
         get_session_list_url = URL('get_session_list', signer=url_signer),
         search_url=URL('search', signer=url_signer),
+        enroll_session_url=URL('enroll_session', signer=url_signer),
     )
 
 
@@ -277,23 +278,25 @@ def search():
     school = request.params.get("school") # what I typed in search bar
 
     # ONLY display sessions that user who is logged in NOT ENROLLED YET
-    session_list = db(db.attendance.email != get_user_email()).select().as_list()
-    for s in session_list:
-        session_info = db(db.session.id == s["session_id"]).select()
-        for info in session_info:
-            s["session_name"] = info.session_name
-            s["owner"] = info.owner
-            s["school"] = info.school
-            s["term"] = info.term
-            s["class_name"] = info.class_name
-
-            s["location"] = info.location
-            s["description"] = info.description
-            s["date"] = info.date
-            s["starttime"] = info.starttime
-            s["endtime"] = info.endtime
-            s["official"] = info.official
-
+    # List of sessions that user who is logged in NOT ENROLLED YET
+    session_list_not_enrolled = []
+    attendance_list = db(db.attendance).select().as_list()
+    session_list = db(db.session).select().as_list()
+    for each_session in session_list:
+        email_list = []
+        for each_attendance in attendance_list:
+            # if db.session id == db attendance session_id
+            if (each_session["id"] == each_attendance["session_id"]):
+                # add all attendance user email to email_list
+                email_list.append(each_attendance["email"])
+        # if there is NO user who is logged in in the email list -> user is not enrolled in that session yet
+        if (get_user_email() not in email_list):
+            # add that session to "session_list_not_enrolled" list
+            session_list_not_enrolled.append(each_session)
+    
+    # rename session_list_not_enrolled list to "session_list"
+    session_list = session_list_not_enrolled
+        
     # search results
     results = []
     for r in session_list:
@@ -308,3 +311,14 @@ def search():
     
     return dict(results=results,
                 session_list=session_list)
+
+@action('enroll_session', method="POST")
+@action.uses(db, auth.user, url_signer.verify())
+def enroll_session():
+    session_id = request.json.get('session_id')
+    print("haha", session_id)
+    db.attendance.insert(
+        email = get_user_email(),
+        session_id = request.json.get('session_id')
+    )
+    return "ok"

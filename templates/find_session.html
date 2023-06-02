@@ -183,7 +183,7 @@
                     <td>{{r.description}}</td>
                     <td>{{r.official}}</td>
                     <td>
-                      <a class="button is-success is-outlined is-light">
+                      <a class="button is-success is-outlined is-light" @click="enroll_session(r.id)">
                         Enroll
                       </a>
                     </td>
@@ -202,6 +202,7 @@
 <script>
   let get_session_list_url = "[[=XML(get_session_list_url)]]";
   let search_url= "[[=XML(search_url)]]";
+  let enroll_session_url = "[[=XML(enroll_session_url)]]"
 </script>
 <!-- index.js or create another js file-->
 <script src="js/index.js"></script>
