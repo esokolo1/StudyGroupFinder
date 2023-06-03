@@ -30,13 +30,10 @@ from py4web.utils.form import Form, FormStyleBulma
 from yatl.helpers import A
 from .common import db, session, T, cache, auth, logger, authenticated, unauthenticated, flash
 from py4web.utils.url_signer import URLSigner
-from .models import get_user_id
+from .models import get_user_id, get_user_email
 from pydal.validators import *
 
 import datetime
-# from datetime import datetime
-import pytz
-from pytz import timezone
 
 # Source: adding images - https://github.com/learn-py4web/star_ratings
 
