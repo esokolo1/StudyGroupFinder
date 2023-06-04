@@ -43,8 +43,8 @@ db.define_table(
     Field('endtime', requires = IS_NOT_EMPTY()),
     Field('announcement', default=""),
     Field('official'), # string, saying TA or student led
-    Field('max_num_students', requires = IS_NOT_EMPTY()),
-    Field('num_students', default=1)
+    Field('max_num_students', 'integer', requires = IS_NOT_EMPTY()),
+    Field('num_students', 'integer', default=1)
 )
 
 db.define_table(

@@ -166,7 +166,7 @@
                       <th><div class="has-text-weight-bold">End Time</div></th>
                       <th><div class="has-text-weight-bold">Description</div></th>
                       <th><div class="has-text-weight-bold">TA/Student Led</div></th>
-                      <th></th>
+                      <th><div class="has-text-weight-bold">Status</div></th>
                   </tr>
               </thead>
       
@@ -183,9 +183,12 @@
                     <td>{{r.description}}</td>
                     <td>{{r.official}}</td>
                     <td>
-                      <a class="button is-success is-outlined is-light" @click="enroll_session(r.id)">
-                        Enroll
+                      <a v-if="r.success_enroll" class="button is-success is-outlined is-light" @click="enroll_session(r.id)">
+                          Enroll
                       </a>
+                      <div v-else="!r.success_enroll">
+                        Full/Closed
+                      </div>
                     </td>
                   </tr>
                   [[pass]]

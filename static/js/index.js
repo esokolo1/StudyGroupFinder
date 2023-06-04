@@ -17,6 +17,7 @@ let init = (app) => {
         show_search_results_page: false,
         query: "",
         results: [],
+        success_enroll: true,
     };
 
     app.enumerate = (a) => {
@@ -31,12 +32,22 @@ let init = (app) => {
         // sends query to server
         axios.get(search_url, {params: {school: app.vue.query}})
         .then(function(result) {
-            // Console log display what user typed in search bar
-            console.log('hello', app.vue.query);
 
             app.vue.results = result.data.results;
             app.vue.results = app.enumerate(app.vue.results);
-            console.log('results', app.vue.results);
+
+            // check if num_students < max_num_students or open/closed status == "False"
+            for (let i = 0; i < app.vue.results.length; i++) {
+                if (app.vue.results[i].open === "False") {
+                    app.vue.results[i].success_enroll = false;
+                }
+                else if (app.vue.results[i].num_students < app.vue.results[i].max_num_students) {
+                    app.vue.results[i].success_enroll = true;
+                }
+                else {
+                    app.vue.results[i].success_enroll = false;
+                }
+            }
 
             // after we find the search results, set the show_search_results_page = true
             app.vue.show_search_results_page = true;
@@ -48,7 +59,6 @@ let init = (app) => {
         axios.get(get_session_list_url)
             .then(function(response) {
                 app.vue.session_list = response.data.session_list;
-                console.log(app.vue.session_list)
                 app.vue.session_list = app.enumerate(app.vue.session_list);
 
                 for (let i = 0; i < app.vue.session_list.length; i++) {
@@ -68,19 +78,17 @@ let init = (app) => {
     }
 
     app.enroll_session = function(session_id) {
-        // console.log('abc', session_id);
         axios.post(enroll_session_url,
-            {
-                // get session id 
-                session_id: session_id
+        {
+            // get session id 
+            session_id: session_id
 
-            }).then(function(response) {
-                app.vue.results = response.data.results;
-                app.search();
-            });
-
+        }).then(function(response) {
+            app.vue.results = response.data.results;
+            app.search();
+        });
+               
     }
-
 
     // This contains all the methods.
     app.methods = {

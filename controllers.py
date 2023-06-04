@@ -238,12 +238,18 @@ def get_session_list():
             s["owner"] = info.owner
             s["school"] = info.school
             s["term"] = info.term
-
+            s["open"] = info.open
+            s["class_name"] = info.class_name
             s["location"] = info.location
             s["description"] = info.description
             s["date"] = info.date
             s["starttime"] = info.starttime
             s["endtime"] = info.endtime
+            s["announcement"] = info.announcement
+            s["official"] = info.official
+            s["max_num_students"] = info.max_num_students
+            s["num_students"] = info.num_students
+
 
             # convert string Date to datetime object
             convertDate = datetime.datetime.strptime(s["date"], '%Y-%m-%d')
@@ -251,7 +257,7 @@ def get_session_list():
             changeDateFormat = convertDate.strftime("%Y%m%d")
             # s["calendar"] = 'https://calendar.google.com/calendar/render?action=TEMPLATE&text=' + s["session_name"] + '&details=' + s["description"] + '&dates=' + changeDateFormat + 'T' + s["starttime"]+ '/' + changeDateFormat + 'T' + s["endtime"] + '&location=' + s["location"]
 
-            s["class_name"] = info.class_name
+
             s["edit"] = URL('edit_session', s["id"], signer=url_signer)
             s["delete"] = URL('delete_session', s["id"], signer=url_signer)
     
@@ -277,7 +283,6 @@ def find_session():
 def search():
     school = request.params.get("school") # what I typed in search bar
 
-    # ONLY display sessions that user who is logged in NOT ENROLLED YET
     # List of sessions that user who is logged in NOT ENROLLED YET
     session_list_not_enrolled = []
     attendance_list = db(db.attendance).select().as_list()
@@ -316,7 +321,11 @@ def search():
 @action.uses(db, auth.user, url_signer.verify())
 def enroll_session():
     session_id = request.json.get('session_id')
-    print("haha", session_id)
+    # print('check', session_id)
+    session_list = db(db.session).select()
+    # update num_students
+    db(db.session.id == session_id).update(num_students = db.session.num_students + 1)
+    # add user email to attendance table
     db.attendance.insert(
         email = get_user_email(),
         session_id = request.json.get('session_id')
