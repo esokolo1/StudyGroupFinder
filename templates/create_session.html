@@ -1,6 +1,60 @@
 [[extend 'layout.html']]
 
-<div class="section">
-   <h1 class="title">New Study Session</h1>
-   [[=form]]
+<style>
+  [v-cloak] {
+       display: none;
+  }
+  </style>
+
+<div class="section" id="vue-target" v-cloak>
+  <div class="columns is-fullheight is-narrow-mobile">
+    <!--navigation-->
+    <aside class="main-content column is-2 is-narrow-mobile is-fullheight is-mobile">
+      <ul class="menu-list">
+        <!--Home-->
+        <li>
+          <a href="[[=URL('index')]]" class="">
+            <span class="icon"><i class="fa fa-home"></i></span> Home
+          </a>
+        </li>
+        <!--Schedule-->
+        <li>
+          <a href="[[=URL('dashboard')]]" class="">
+            <span class="icon"><i class="fa fa-calendar"></i></span> Schedule
+          </a>
+        </li>
+        <!--Find a session-->
+        <li>
+          <a href="[[=URL('find_session')]]" class="">
+            <span class="icon"><i class="fa fa-search"></i></span> Find Session
+          </a>
+        </li>
+        <!--Create a session-->
+        <li>
+          <a href="[[=URL('create_session_results')]]" class="is-active">
+            <span class="icon"><i class="fa fa-calendar-plus-o"></i></span> Create Session
+          </a>
+        </li>
+      </ul> 
+    </aside>
+    <!--------------->
+
+    <!---Create Group Study Session-->
+    <div class="column create_session">
+      <h1 class="title has-text-weight-light is-mobile">Create Group Study Session</h1>
+      <div class="find_session_inputs">
+        <!-- '[add forms here]' -->
+        [[=form]]
+      </div>
+    </div>
+    
+
+  </div>
 </div>
+
+[[block page_scripts]]
+<!-- Loads the index-specific js for Vue -->
+<script>
+</script>
+<script src="js/index.js"></script>
+[[end]]
