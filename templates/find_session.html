@@ -164,7 +164,7 @@
     </div>
 
     <!--Search Results Page-->
-    <div class="column search_results" v-else="show_search_results_page">
+    <div class="column search_results" v-if="show_search_results_page">
       <h1 class="title has-text-weight-light is-mobile">Search Results</h1>
         <div class="block">
           <table class="table is-fullwidth">
@@ -211,27 +211,6 @@
         </div>
     </div>
 
-          <tbody v-for="r in results">
-            <tr>
-              <td>{{r.session_name}}</td>
-              <td>{{r.school}}</td>
-              <td>{{r.term}}</td>
-              <td>{{r.class_name}}</td>
-              <td>{{r.location}}</td>
-              <td>{{r.date}}</td>
-              <td>{{r.starttime}}</td>
-              <td>{{r.endtime}}</td>
-              <td>{{r.description}}</td>
-              <td>{{r.official}}</td>
-              <td>
-                <a class="button is-success is-outlined is-light"> Enroll </a>
-              </td>
-            </tr>
-            [[pass]]
-          </tbody>
-        </table>
-      </div>
-    </div>
   </div>
 </div>
 
