@@ -16,7 +16,16 @@ let init = (app) => {
 
         show_search_results_page: false,
         query: "",
+        term: "",
+        status: "",
+        class_name: "",
+        location: "",
+        meeting_date: "",
+        meeting_start: "",
+        meeting_end: "",
+        ta: "",
         results: [],
+
         success_enroll: true,
     };
 
@@ -30,7 +39,17 @@ let init = (app) => {
     // SEARCH FUNCTION
     app.search = function() {
         // sends query to server
-        axios.get(search_url, {params: {school: app.vue.query}})
+        axios.get(search_url, {
+            params: {
+                school: app.vue.query,
+                term: app.vue.term,
+                status: app.vue.status,
+                class_name: app.vue.class_name,
+                location: app.vue.location,
+                meeting_date: app.vue.meeting_date,
+                meeting_start: app.vue.meeting_start,
+                meeting_end: app.vue.meeting_end,
+                ta: app.vue.ta,}})
         .then(function(result) {
 
             app.vue.results = result.data.results;

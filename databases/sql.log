@@ -243,3 +243,91 @@ success!
 success!
 success!
 success!
+success!
+success!
+success!
+success!
+success!
+timestamp: 2023-06-03T23:40:36.493658
+CREATE TABLE "posts"(
+    "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+    "email" INTEGER REFERENCES "attendance" ("id") ON DELETE CASCADE ON UPDATE CASCADE  ,
+    "timestamp" CHAR(512),
+    "content" CHAR(512),
+    "session_id" INTEGER REFERENCES "session" ("id") ON DELETE CASCADE ON UPDATE CASCADE  
+);
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+timestamp: 2023-06-04T00:30:00.219705
+ALTER TABLE "posts" ADD "attendance_id" INTEGER REFERENCES "attendance" ("id") ON DELETE CASCADE ON UPDATE CASCADE  ;
+success!
+success!
+success!
+success!
+success!
+success!
+timestamp: 2023-06-04T00:31:26.778157
+ALTER TABLE "posts" ADD "email1" CHAR(512);
+success!
+success!
+timestamp: 2023-06-04T00:32:25.743302
+ALTER TABLE "posts" ADD "user_email" CHAR(512);
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!

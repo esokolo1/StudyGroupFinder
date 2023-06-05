@@ -26,7 +26,7 @@
         <!--Schedule-->
         <li>
           <a href="[[=URL('dashboard')]]" class="">
-            <span class="icon"><i class="fa fa-calendar"></i></span> Schedule
+            <span class="icon"><i class="fa fa-comments-o" aria-hidden="true"></i></span> Dashboard
           </a>
         </li>
         <!--Find a session-->
@@ -64,7 +64,7 @@
           <div class="is-flex is-flex-direction-row is-align-items-center">
             <label style="padding-left: 15%">Term:</label>
             <div class="dropdown_menu" style="padding-left: 9.3rem">
-              <input class="input" type='text'  size="43" placeholder="Type Term"/>
+              <input class="input" type='text'  size="43" placeholder="Type Term" v-model="term"/>
             </div>
           </div> 
           <br>
@@ -73,7 +73,7 @@
             <label  style="padding-left: 15%">Status: </label>
             <div class="dropdown_menu" style="padding-left: 8.7rem">
               <div class="select">
-                <select> 
+                <select v-model="status"> 
                   <option value="" disabled selected>Select Status</option>
                   <option>Open</option>
                   <option>Closed</option>
@@ -86,7 +86,7 @@
           <div class="is-flex is-flex-direction-row is-align-items-center">
             <label style="padding-left: 15%">Class Name: </label>
             <div class="dropdown_menu" style="padding-left: 6.3rem">
-              <input class="input" type='text'  size="43" placeholder="Type Class Name"/>
+              <input class="input" type='text'  size="43" placeholder="Type Class Name" v-model="class_name"/>
             </div>
           </div>
           <br>
@@ -94,7 +94,7 @@
           <div class="is-flex is-flex-direction-row is-align-items-center">
             <label style="padding-left: 15%">Location: </label>
             <div class="dropdown_menu" style="padding-left: 7.8rem">
-              <input class="input" type='text'  size="43" placeholder="Type Location"/>
+              <input class="input" type='text'  size="43" placeholder="Type Location" v-model="location"/>
             </div>
           </div>
           <br>
@@ -103,7 +103,7 @@
             <label style="padding-left: 15%">Meeting Dates: </label>
             <div class="dropdown_menu" style="padding-left: 5.0rem;">
               <div class="select">
-                <input type="date" style="padding: 10px;" name="datetime"><br>
+                <input v-model="meeting_date" type="date" style="padding: 10px;" name="datetime"><br>
               </div>
             </div>
           </div>
@@ -112,7 +112,7 @@
           <div class="is-flex is-flex-direction-row is-align-items-center">
             <label style="padding-left: 15%">Meeting Start Times: </label>
             <div class="dropdown_menu" style="padding-left: 2.5rem">
-                <input type="time" style="padding: 10px;" name="datetime"><br>
+                <input v-model="meeting_start" type="time" style="padding: 10px;" name="datetime"><br>
             </div>
           </div>
           <br>
@@ -120,7 +120,7 @@
           <div class="is-flex is-flex-direction-row is-align-items-center">
             <label style="padding-left: 15%">Meeting End Times: </label>
             <div class="dropdown_menu" style="padding-left: 3rem">
-                <input type="time" style="padding: 10px;" name="datetime"><br>
+                <input v-model="meeting_end" type="time" style="padding: 10px;" name="datetime"><br>
             </div>
           </div>
           <br>
@@ -129,7 +129,7 @@
             <label style="padding-left: 15%">TA/Tutor Attendance: </label>
             <div class="dropdown_menu" style="padding-left: 2.4rem">
               <div class="select">
-                <select> 
+                <select v-model="ta"> 
                   <option value="" disabled selected>Select One</option>
                   <option>TA/Tutor</option>
                   <option>Student Led</option>
