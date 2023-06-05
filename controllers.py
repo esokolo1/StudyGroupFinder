@@ -223,20 +223,20 @@ def dashboard():
 @action.uses(db, auth.user, url_signer.verify())
 def get_session_list():
     # My Enrolled Sessions (vue.js)
-    sessions = db(db.attendance.email == get_user_email()).select().as_list()
+    sessions = db(db.attendance.user_id == get_user_id()).select().as_list()
     for s in sessions:
         session_info = db(db.session.id == s["session_id"]).select()
         for info in session_info:
             s["session_name"] = info.session_name
-            s["owner"] = info.owner
-            s["school"] = info.school
-            s["term"] = info.term
+            s["owner"] = info.user_id
+            s["school"] = 'tmp'#TODO:get school based on course_id
+            s["term"] = 'tmp'#TODO
 
-            s["location"] = info.location
-            s["description"] = info.description
-            s["date"] = info.date
-            s["starttime"] = info.starttime
-            s["endtime"] = info.endtime
+            s["location"] = info.session_location
+            s["description"] = info.session_description
+            s["date"] = info.session_days
+            s["starttime"] = info.session_time
+            s["endtime"] = info.session_time#TODO:use length instead
 
             # convert string Date to datetime object
             convertDate = datetime.datetime.strptime(s["date"], '%Y-%m-%d')
@@ -244,7 +244,7 @@ def get_session_list():
             changeDateFormat = convertDate.strftime("%Y%m%d")
             # s["calendar"] = 'https://calendar.google.com/calendar/render?action=TEMPLATE&text=' + s["session_name"] + '&details=' + s["description"] + '&dates=' + changeDateFormat + 'T' + s["starttime"]+ '/' + changeDateFormat + 'T' + s["endtime"] + '&location=' + s["location"]
 
-            s["class_name"] = info.class_name
+            s["class_name"] = info.course_id
             s["edit"] = URL('edit_session', s["id"], signer=url_signer)
             s["delete"] = URL('delete_session', s["id"], signer=url_signer)
     
