@@ -111,3 +111,46 @@ db.define_table(
 )
 
 db.commit()
+####################
+
+def testing_insert():
+  if db(db.school).select().first() is None:
+
+    db(db.auth_user.email.like('_%')).delete()
+    for i in range(0,3):
+      user=dict(
+        email='_'+str(i)+'@ucsc.edu',
+        first_name='a',last_name='a',
+        password='_'+str(i),
+      )
+      auth.register(user,send=False)
+
+    db(db.school).delete()
+    db.school.insert(
+      school_name='University of California, Santa Cruz',
+      school_abbr='UCSC',
+    )
+    for i in range(0,6):
+      db.school.insert(school_name='School '+str(i))
+
+    first_school_id = db(db.school).select().first().id
+    db(db.course).delete()
+    db.course.insert(
+      school_id=first_school_id,
+      course_term='2023 Spring',
+      course_subject='CSE',
+      course_number='183',
+      course_title='Webpasdfpjaodsi',
+    )
+    for i in range(0,6):
+      db.course.insert(
+        school_id=first_school_id,
+        course_term='2023 Spring',
+        course_subject='CSE',
+        course_number=i,
+        course_title='course'+str(i),
+      )
+
+    db.commit()
+
+testing_insert()

@@ -370,3 +370,111 @@ def search():
     
     return dict(results=results,
                 session_list=session_list)
+
+#############
+#helper
+def course_string(course_row):
+  return (
+    course_row.course_subject + ' ' +
+    course_row.course_number + ' ' +
+    (course_row.course_title or '')
+  )
+###
+@action('get_schools', method=['GET'])
+@action.uses(db, url_signer.verify())
+def get_schools():
+  search_query = request.params.get('query') or ''
+  search_query = search_query.lower()
+  db_query = (
+    db.school.school_name.lower().like('%'+search_query+'%') |
+    db.school.school_abbr.lower().like('%'+search_query+'%')
+  )
+  school_list = [
+    dict(id=row.id, name=row.school_name)
+    for row in db(db_query).select()
+  ]
+  return dict(school_list=school_list)
+@action('get_courses', method=['GET'])
+@action.uses(db, auth.user, url_signer.verify())
+def get_course_list():
+  search_query = request.params.get('query') or ''
+  search_query = search_query.lower()
+  db_query = (
+    db.course.course_subject.lower().like('%'+search_query+'%') |
+    db.course.course_number.lower().like('%'+search_query+'%') |
+    db.course.course_title.lower().like('%'+search_query+'%')
+  )
+  course_list = [
+    dict(id=row.id, name=course_string(row))
+    for row in db(db_query).select()
+  ]
+  return dict(course_list=course_list)
+@action('get_enrolled_schools', method=['GET'])
+@action.uses(db, auth, auth.user, url_signer.verify())
+def get_enrolled_schools():
+  enrolled_schools = [
+    dict(id=s.school_id, name=db.school[s.school_id].school_name)
+    for s in db(db.school_enrollment.user_id==get_user_id()).select()
+  ]
+  return dict(enrolled_schools=enrolled_schools)
+@action('get_enrolled_courses', method=['GET'])
+@action.uses(db, auth, auth.user, url_signer.verify())
+def get_enrolled_courses():
+  enrolled_courses = [
+    dict(id=c.course_id, name=course_string(db.course[c.course_id]))
+    for c in db(db.course_enrollment.user_id==get_user_id()).select()
+  ]
+  return dict(enrolled_courses=enrolled_courses)
+@action('get_profile', method=['GET'])
+@action.uses(db, auth, auth.user, url_signer.verify())
+def get_profile():
+  email = auth.current_user.get('email')
+  first_name = auth.current_user.get('first_name')
+  last_name = auth.current_user.get('last_name')
+  profile_row = db(db.profile.user_id==get_user_id()).select().first()
+  description = profile_row.profile_description if profile_row else ''
+  return dict(
+    email=email,
+    first_name=first_name,
+    last_name=last_name,
+    description=description,
+  )
+@action('save_profile', method=['POST'])
+@action.uses(db, auth, auth.user, url_signer.verify())
+def save_profile():
+  first_name = request.json.get('first_name')
+  last_name = request.json.get('last_name')
+  description = request.json.get('description')
+  enrolled_schools = request.json.get('enrolled_schools')
+  enrolled_courses = request.json.get('enrolled_courses')
+  db(db.auth_user.id==get_user_id()).update(
+    first_name=first_name, last_name=last_name )
+  db.profile.update_or_insert(
+    db.profile.user_id==get_user_id(),
+    profile_description=description )
+  db(db.school_enrollment.user_id==get_user_id()).delete()
+  for school in enrolled_schools:
+    db.school_enrollment.update_or_insert(
+      db.school_enrollment.school_id==school['id'],
+      school_id=school['id'] )
+  db(db.course_enrollment.user_id==get_user_id()).delete()
+  for course in enrolled_courses:
+    db.course_enrollment.update_or_insert(
+      db.course_enrollment.course_id==course['id'],
+      course_id=course['id'] )
+  return 'ok'
+@action('profile', method=['GET'])
+@action.uses('profile.html', auth, auth.user, url_signer)
+def profile():
+  if auth.current_user:
+    return dict(
+      get_schools_url=URL('get_schools', signer=url_signer),
+      get_courses_url=URL('get_courses', signer=url_signer),
+      get_enrolled_schools_url=URL('get_enrolled_schools',
+        signer=url_signer),
+      get_enrolled_courses_url=URL('get_enrolled_courses',
+        signer=url_signer),
+      get_profile_url=URL('get_profile', signer=url_signer),
+      save_profile_url=URL('save_profile', signer=url_signer),
+    )
+  redirect(auth, login)
