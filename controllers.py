@@ -54,15 +54,6 @@ def index():
         get_session_list_url = URL('get_session_list', signer=url_signer)
     )
 
-@action('find_session', method=["GET", "POST"])
-@action.uses('find_session.html', db, session, auth.user, url_signer)
-def find_session():
-
-    return dict(
-        get_session_list_url = URL('get_session_list', signer=url_signer),
-
-    )
-
 
 @action('create_session', method=["GET", "POST"])
 @action.uses('create_session.html', db, session, auth.user, url_signer)
@@ -217,22 +208,8 @@ def delete_contact(attendance_id):
 @action('dashboard', method=["GET", "POST"])
 @action.uses('dashboard.html',db, auth.user, url_signer)
 def dashboard():
-    # display all sessions that user who is logged in NOT attending
-    # sessions = db(db.attendance.email != get_user_email()).select().as_list()
-    # for s in sessions:
-    #     session_info = db(db.session.id == s["session_id"]).select()
-    #     for info in session_info:
-    #         s["session_name"] = info.session_name
-    #         s["owner"] = info.owner
-    #         s["school"] = info.school
-    #         s["term"] = info.term
-    #         s["class_name"] = info.class_name
-    #         s["edit"] = URL('edit_session', s["id"], signer=url_signer)
-    #         s["delete"] = URL('delete_session', s["id"], signer=url_signer)
-    
     return dict(
         get_session_list_url = URL('get_session_list', signer=url_signer),
-        # sessions=sessions
     )
 
 @action('get_session_list', method=["GET", "POST"])
@@ -247,28 +224,166 @@ def get_session_list():
             s["owner"] = info.owner
             s["school"] = info.school
             s["term"] = info.term
-
+            s["open"] = info.open
+            s["class_name"] = info.class_name
             s["location"] = info.location
             s["description"] = info.description
             s["date"] = info.date
             s["starttime"] = info.starttime
             s["endtime"] = info.endtime
+            s["announcement"] = info.announcement
+            s["official"] = info.official
+            s["max_num_students"] = info.max_num_students
+            s["num_students"] = info.num_students
+
 
             # convert string Date to datetime object
             convertDate = datetime.datetime.strptime(s["date"], '%Y-%m-%d')
             # change date format
             changeDateFormat = convertDate.strftime("%Y%m%d")
-            # s["calendar"] = 'https://calendar.google.com/calendar/render?action=TEMPLATE&text=' + s["session_name"] + '&details=' + s["description"] + '&dates=' + changeDateFormat + 'T' + s["starttime"]+ '/' + changeDateFormat + 'T' + s["endtime"] + '&location=' + s["location"]
+            s["calendar"] = 'https://calendar.google.com/calendar/render?action=TEMPLATE&text=' + s["session_name"] + '&details=' + s["description"] + '&dates=' + changeDateFormat + 'T' + s["starttime"]+ '/' + changeDateFormat + 'T' + s["endtime"] + '&location=' + s["location"]
 
-            s["class_name"] = info.class_name
+
             s["edit"] = URL('edit_session', s["id"], signer=url_signer)
             s["delete"] = URL('delete_session', s["id"], signer=url_signer)
+            s["discussion"] =  URL('discussion', info.id, signer=url_signer)
             s["info_url"] = URL('info', s["session_id"], signer=url_signer)
     
     return dict(
         session_list = sessions,
         url_signer = url_signer,
         owner = get_user_id(),
+    )
+
+
+@action('find_session', method=["GET", "POST"])
+@action.uses('find_session.html', db, session, auth.user, url_signer)
+def find_session():
+
+    return dict(
+        get_session_list_url = URL('get_session_list', signer=url_signer),
+        search_url=URL('search', signer=url_signer),
+        enroll_session_url=URL('enroll_session', signer=url_signer),
+    )
+
+
+@action('search')
+@action.uses(db, auth.user, url_signer.verify())
+def search():
+    school = request.params.get("school") # what I typed in search bar
+    term = request.params.get("term")
+    status = request.params.get("status")
+    open_status = "True"
+    if status == "Open": 
+        open_status = "True"
+    elif status == "Closed":
+        open_status = "False"
+    class_name = request.params.get("class_name")
+    location = request.params.get("location")
+    meeting_date = request.params.get("meeting_date")
+    meeting_start = request.params.get("meeting_start")
+    meeting_end = request.params.get("meeting_end")
+    ta = request.params.get("ta")
+
+
+    # List of sessions that user who is logged in NOT ENROLLED YET
+    session_list_not_enrolled = []
+    attendance_list = db(db.attendance).select().as_list()
+    session_list = db(db.session).select().as_list()
+    for each_session in session_list:
+        email_list = []
+        for each_attendance in attendance_list:
+            # if db.session id == db attendance session_id
+            if (each_session["id"] == each_attendance["session_id"]):
+                # add all attendance user email to email_list
+                email_list.append(each_attendance["email"])
+        # if there is NO user who is logged in in the email list -> user is not enrolled in that session yet
+        if (get_user_email() not in email_list):
+            # add that session to "session_list_not_enrolled" list
+            session_list_not_enrolled.append(each_session)
+    
+    # rename session_list_not_enrolled list to "session_list"
+    session_list = session_list_not_enrolled
+        
+    # search results
+    results = []
+    for r in session_list:
+        # str(school) -> what user typed in search bar
+        # r["school"] -> iterate through list of sessions, only extract school name
+        # if r['school'] contains what user typed in search bar, append to results list
+        # .lower() -> convert search input to lowercase
+
+        # ADD CODE HERE (term, status, classname, location, meeting date, starttime, endtime, attendance)
+        if (len(str(meeting_start)) > 0):
+            start_hr = int(meeting_start[:2])
+            start_m = int(meeting_start[3:5]);
+        official_start_hr = int((r['starttime'])[:2])
+        official_start_m = int(r['starttime'][3:5])
+
+        if (len(str(meeting_end)) > 0):
+            print("valid end")
+            end_hr = int(meeting_end[:2])
+            end_m = int(meeting_end[3:5])
+        # print(len(str(meeting_end)))
+        official_end_hr = int(r['endtime'][:2])
+        official_end_m = int(r['endtime'][3:5])
+
+        actual_end_m = official_end_m
+        if official_end_m == 0:
+            actual_end_m = 60
+
+        if (str(school).lower() in r['school'].lower()):
+            if (str(term).lower() in r['term'].lower()):
+                if(open_status == r['open']):
+                    if (str(class_name).lower() in r['class_name'].lower()):
+                        if (str(location).lower() in r['location'].lower()):
+                            if (str(meeting_date).lower() in r['date'].lower()):
+                                # if there is a start and end time 
+                                if ((len(str(meeting_start)) > 0) & (len(str(meeting_end)) > 0)):
+                                     if ((start_hr >= official_start_hr) & (start_m >= official_start_m)):
+                                         # checks that choosen start time is before the official meetings end time
+                                        if ((start_hr < official_end_hr) & (start_m <= actual_end_m)):
+                                            # checks that choosen end time is before or same as official end time
+                                            if ((end_hr <= official_end_hr) & (end_m <= actual_end_m)):
+                                                # checks that choosen end time is after the official start time 
+                                                if ((end_hr >= official_start_hr) & (end_m >= official_start_m)):
+                                                    if(str(ta) in r['official']):
+                                                        results.append(r)
+                                # if there is a start time 
+                                elif ((len(str(meeting_start)) > 0)):
+                                    # checks that choosen start time is same or after official meetings start time
+                                    if ((start_hr >= official_start_hr) & (start_m >= official_start_m)):
+                                         # checks that choosen start time is before the official meetings end time
+                                        if ((start_hr < official_end_hr) & (start_m <= actual_end_m)):
+                                            if(str(ta) in r['official']):
+                                                    results.append(r)
+                                # if there is an end time 
+                                elif (len(str(meeting_end)) > 0):
+                                        # checks that choosen end time is before or same as official end time 
+                                        if ((end_hr <= official_end_hr) & (end_m <= actual_end_m)):
+                                            # checks that choosen end time is after the official start time 
+                                            if ((end_hr >= official_start_hr) & (end_m >= official_start_m)):
+                                                if(str(ta) in r['official']):
+                                                    results.append(r)
+                                # if there are no start or end time 
+                                else:
+                                    if(str(ta) in r['official']):
+                                        results.append(r)
+    return dict(results=results,
+                session_list=session_list)
+
+@action('enroll_session', method="POST")
+@action.uses(db, auth.user, url_signer.verify())
+def enroll_session():
+    session_id = request.json.get('session_id')
+    # print('check', session_id)
+    session_list = db(db.session).select()
+    # update num_students
+    db(db.session.id == session_id).update(num_students = db.session.num_students + 1)
+    # add user email to attendance table
+    db.attendance.insert(
+        email = get_user_email(),
+        session_id = request.json.get('session_id')
     )
 
 @action('info/<id:int>')
