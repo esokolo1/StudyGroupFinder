@@ -10,11 +10,17 @@ from pydal.validators import *
 def get_user_email():
     return auth.current_user.get('email') if auth.current_user else None
 
-def get_time():
-    return datetime.datetime.utcnow()
-
 def get_user_id():
     return auth.current_user.get('id') if auth.current_user else None
+
+def get_first_name():
+    return auth.current_user.get('first_name') if auth.current_user else None
+
+def get_last_name():
+    return auth.current_user.get('last_name') if auth.current_user else None
+
+def get_time():
+    return datetime.datetime.utcnow()
 
 
 ### Define your table below

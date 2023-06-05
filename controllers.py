@@ -30,7 +30,7 @@ from py4web.utils.form import Form, FormStyleBulma
 from yatl.helpers import A
 from .common import db, session, T, cache, auth, logger, authenticated, unauthenticated, flash
 from py4web.utils.url_signer import URLSigner
-from .models import get_user_id, get_user_email
+from .models import get_user_email, get_user_id, get_time
 from pydal.validators import *
 
 import datetime
@@ -42,6 +42,7 @@ url_signer = URLSigner(session)
 @action('index')
 @action.uses('index.html', db, auth, url_signer)
 def index():
+
     return dict(
         # COMPLETE: return here any signed URLs you need.
         my_callback_url = URL('my_callback', signer=url_signer),
@@ -201,22 +202,8 @@ def delete_contact(attendance_id):
 @action('dashboard', method=["GET", "POST"])
 @action.uses('dashboard.html',db, auth.user, url_signer)
 def dashboard():
-    # display all sessions that user who is logged in NOT attending
-    # sessions = db(db.attendance.email != get_user_email()).select().as_list()
-    # for s in sessions:
-    #     session_info = db(db.session.id == s["session_id"]).select()
-    #     for info in session_info:
-    #         s["session_name"] = info.session_name
-    #         s["owner"] = info.owner
-    #         s["school"] = info.school
-    #         s["term"] = info.term
-    #         s["class_name"] = info.class_name
-    #         s["edit"] = URL('edit_session', s["id"], signer=url_signer)
-    #         s["delete"] = URL('delete_session', s["id"], signer=url_signer)
-    
     return dict(
         get_session_list_url = URL('get_session_list', signer=url_signer),
-        # sessions=sessions
     )
 
 @action('get_session_list', method=["GET", "POST"])
@@ -231,28 +218,36 @@ def get_session_list():
             s["owner"] = info.user_id
             s["school"] = 'tmp'#TODO:get school based on course_id
             s["term"] = 'tmp'#TODO
-
+            s["open"] = info.session_is_open
+            s["class_name"] = info.course_id#TODO:get course name
             s["location"] = info.session_location
             s["description"] = info.session_description
             s["date"] = info.session_days
             s["starttime"] = info.session_time
             s["endtime"] = info.session_time#TODO:use length instead
+            s["announcement"] = 'tmp'#TODO:get announcement from post
+            s["official"] = info.has_tas
+            s["max_num_students"] = info.session_capacity
+            s["num_students"] = 0#TODO:determine from attendance
 
             # convert string Date to datetime object
             convertDate = datetime.datetime.strptime(s["date"], '%Y-%m-%d')
             # change date format
             changeDateFormat = convertDate.strftime("%Y%m%d")
-            # s["calendar"] = 'https://calendar.google.com/calendar/render?action=TEMPLATE&text=' + s["session_name"] + '&details=' + s["description"] + '&dates=' + changeDateFormat + 'T' + s["starttime"]+ '/' + changeDateFormat + 'T' + s["endtime"] + '&location=' + s["location"]
+            s["calendar"] = 'https://calendar.google.com/calendar/render?action=TEMPLATE&text=' + s["session_name"] + '&details=' + s["description"] + '&dates=' + changeDateFormat + 'T' + s["starttime"]+ '/' + changeDateFormat + 'T' + s["endtime"] + '&location=' + s["location"]
 
-            s["class_name"] = info.course_id
+
             s["edit"] = URL('edit_session', s["id"], signer=url_signer)
             s["delete"] = URL('delete_session', s["id"], signer=url_signer)
+            s["discussion"] =  URL('discussion', info.id, signer=url_signer)
+            s["info_url"] = URL('info', s["session_id"], signer=url_signer)
     
     return dict(
         session_list = sessions,
         url_signer = url_signer,
         owner = get_user_id(),
     )
+
 
 @action('find_session', method=["GET", "POST"])
 @action.uses('find_session.html', db, session, auth.user, url_signer)
@@ -283,7 +278,7 @@ def search():
     meeting_end = request.params.get("meeting_end")
     ta = request.params.get("ta")
 
-    # ONLY display sessions that user who is logged in NOT ENROLLED YET
+
     # List of sessions that user who is logged in NOT ENROLLED YET
     session_list_not_enrolled = []
     attendance_list = db(db.attendance).select().as_list()
@@ -299,10 +294,10 @@ def search():
         if (get_user_email() not in email_list):
             # add that session to "session_list_not_enrolled" list
             session_list_not_enrolled.append(each_session)
-
+    
     # rename session_list_not_enrolled list to "session_list"
     session_list = session_list_not_enrolled
-
+        
     # search results
     results = []
     for r in session_list:
@@ -312,7 +307,6 @@ def search():
         # .lower() -> convert search input to lowercase
 
         # ADD CODE HERE (term, status, classname, location, meeting date, starttime, endtime, attendance)
-
         if (len(str(meeting_start)) > 0):
             start_hr = int(meeting_start[:2])
             start_m = int(meeting_start[3:5]);
@@ -320,6 +314,7 @@ def search():
         official_start_m = int(r['starttime'][3:5])
 
         if (len(str(meeting_end)) > 0):
+            print("valid end")
             end_hr = int(meeting_end[:2])
             end_m = int(meeting_end[3:5])
         # print(len(str(meeting_end)))
@@ -367,9 +362,48 @@ def search():
                                 else:
                                     if(str(ta) in r['official']):
                                         results.append(r)
-    
     return dict(results=results,
                 session_list=session_list)
+
+@action('enroll_session', method="POST")
+@action.uses(db, auth.user, url_signer.verify())
+def enroll_session():
+    session_id = request.json.get('session_id')
+    # print('check', session_id)
+    session_list = db(db.session).select()
+    # update num_students
+    db(db.session.id == session_id).update(num_students = db.session.num_students + 1)
+    # add user email to attendance table
+    db.attendance.insert(
+        email = get_user_email(),
+        session_id = request.json.get('session_id')
+    )
+
+@action('info/<id:int>')
+@action.uses('info.html', db, auth.user, url_signer.verify())
+def info(id):
+    session = db(db.session.id == id).select().as_list()[0]
+    comments = db(db.comment.session_id == id).select().as_list()
+    get_session_list_url = URL('get_session_list', signer=url_signer)
+    get_comments_url = URL('get_comments', signer=url_signer)
+    add_comment_url = URL('add_comment', signer=url_signer)
+    return dict(session=session, comments=comments, get_session_list_url=get_session_list_url, get_comments_url=get_comments_url, add_comment_url=add_comment_url)
+
+@action('get_comments')
+@action.uses(db, auth.user, url_signer.verify())
+def get_comments():
+    id = request.params.get("id")
+    comments = db(db.comment.session_id == id).select().as_list()
+    comments.reverse()
+    return dict(comments=comments)
+
+@action("add_comment", method="POST")
+@action.uses(db, auth.user, url_signer.verify())
+def add_reply():
+    id = request.json.get("id")
+    comment = request.json.get("new_comment")
+    db.comment.insert(session_id=id, content=comment, timestamp=get_time().isoformat())
+    return "ok"
 
 #############
 #helper
