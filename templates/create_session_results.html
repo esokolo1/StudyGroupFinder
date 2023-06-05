@@ -71,7 +71,7 @@
             
                     <tbody v-for="r in session_list">
                         <tr>
-                          <td>{{r.session_name}}</td>
+                          <td><a :href=r.info_url>{{r.session_name}}</a></td>
                           <td>{{r.school}}</td>
                           <td>{{r.term}}</td>
                           <td>{{r.class_name}}</td>
