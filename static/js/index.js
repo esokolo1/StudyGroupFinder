@@ -13,6 +13,9 @@ let init = (app) => {
         add_edit_status: false,
         remove_delete_status: false,
         session_list: [],
+        comments_displayed: false,
+        new_comment: "",
+        comments: []
     };
 
     app.enumerate = (a) => {
@@ -52,12 +55,39 @@ let init = (app) => {
 
     }
 
+    app.get_comments = function(id) {
+        axios.get(get_comments_url, {params: {id: id}})
+            .then(function(result) {
+                comments_list = result.data.comments;
+                for (let i = 0; i < comments_list.length; i++) {
+                    let timestamp = comments_list[i]["timestamp"];
+                    comments_list[i]["time"] = Sugar.Date(timestamp + "Z").relative();
+                }
+                app.vue.comments = comments_list;
+                app.vue.comments_displayed = true;
+            })
+    }
+
+    app.add_comment = function(id) {
+        axios.post(add_comment_url, {id: id, new_comment: app.vue.new_comment})
+            .then(function(result) {
+                app.vue.new_comment = "";
+                app.get_comments(id);
+            })
+    }
+
+    app.disable_comments = function() {
+        app.vue.comments_displayed = false;
+    }
 
     // This contains all the methods.
     app.methods = {
         // Complete as you see fit.
         load_page: app.load_page,
         enroll_session: app.enroll_session,
+        get_comments: app.get_comments,
+        add_comment: app.add_comment,
+        disable_comments: app.disable_comments
     };
 
     // This creates the Vue instance.

@@ -30,7 +30,7 @@ from yatl.helpers import A
 
 from .common import db, session, T, cache, auth, logger, authenticated, unauthenticated, flash
 from py4web.utils.url_signer import URLSigner
-from .models import get_user_email, get_user_id
+from .models import get_user_email, get_user_id, get_time
 from pydal.validators import *
 
 from py4web.utils.form import Form, FormStyleBulma
@@ -263,9 +263,36 @@ def get_session_list():
             s["class_name"] = info.class_name
             s["edit"] = URL('edit_session', s["id"], signer=url_signer)
             s["delete"] = URL('delete_session', s["id"], signer=url_signer)
+            s["info_url"] = URL('info', s["session_id"], signer=url_signer)
     
     return dict(
         session_list = sessions,
         url_signer = url_signer,
         owner = get_user_id(),
     )
+
+@action('info/<id:int>')
+@action.uses('info.html', db, auth.user, url_signer.verify())
+def info(id):
+    session = db(db.session.id == id).select().as_list()[0]
+    comments = db(db.comment.session_id == id).select().as_list()
+    get_session_list_url = URL('get_session_list', signer=url_signer)
+    get_comments_url = URL('get_comments', signer=url_signer)
+    add_comment_url = URL('add_comment', signer=url_signer)
+    return dict(session=session, comments=comments, get_session_list_url=get_session_list_url, get_comments_url=get_comments_url, add_comment_url=add_comment_url)
+
+@action('get_comments')
+@action.uses(db, auth.user, url_signer.verify())
+def get_comments():
+    id = request.params.get("id")
+    comments = db(db.comment.session_id == id).select().as_list()
+    comments.reverse()
+    return dict(comments=comments)
+
+@action("add_comment", method="POST")
+@action.uses(db, auth.user, url_signer.verify())
+def add_reply():
+    id = request.json.get("id")
+    comment = request.json.get("new_comment")
+    db.comment.insert(session_id=id, content=comment, timestamp=get_time().isoformat())
+    return "ok"
