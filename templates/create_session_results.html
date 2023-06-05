@@ -21,7 +21,7 @@
             <!--Schedule-->
             <li>
               <a href="[[=URL('dashboard')]]" class="">
-                <span class="icon"><i class="fa fa-calendar"></i></span> Schedule
+                <span class="icon"><i class="fa fa-comments-o" aria-hidden="true"></i></span> Dashboard
               </a>
             </li>
             <!--Find a session-->
@@ -71,7 +71,7 @@
             
                     <tbody v-for="r in session_list">
                         <tr>
-                          <td>{{r.session_name}}</td>
+                          <td><a :href=r.info_url>{{r.session_name}}</a></td>
                           <td>{{r.school}}</td>
                           <td>{{r.term}}</td>
                           <td>{{r.class_name}}</td>
@@ -87,13 +87,7 @@
                             </a>
                           </td>
                           <td>
-                            <!-- <a :href="r.calendar">Add to Google Calendar</a> -->
-                            <!-- <a href="http://www.google.com/calendar/render?
-                                action=TEMPLATE
-                                &text=r.session_name
-                                &dates=20220305T103000/20220305T103000
-                                &details=r.description
-                                &location=r.location">Add to my calendar</a> -->
+                            <a :href="r.calendar">Add to Google Calendar</a>
                           </td>
                         </tr>
                         [[pass]]

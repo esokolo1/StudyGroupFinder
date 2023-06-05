@@ -13,13 +13,15 @@ def get_user_email():
 def get_username():
     return auth.current_user.get('username') if auth.current_user else None
 
-def get_time():
-    return datetime.datetime.utcnow()
-
 # added
 def get_user_id():
     return auth.current_user.get('id') if auth.current_user else None
 
+def get_first_name():
+    return auth.current_user.get('first_name') if auth.current_user else None
+
+def get_last_name():
+    return auth.current_user.get('last_name') if auth.current_user else None
 
 
 ### Define your table below
@@ -43,14 +45,24 @@ db.define_table(
     Field('endtime', requires = IS_NOT_EMPTY()),
     Field('announcement', default=""),
     Field('official'), # string, saying TA or student led
-    Field('max_num_students', requires = IS_NOT_EMPTY()),
-    Field('num_students', default=1)
+    Field('max_num_students', 'integer', requires = IS_NOT_EMPTY()),
+    Field('num_students', 'integer', default=1)
 )
 
 db.define_table(
     'attendance',
     Field('email'),
     Field('session_id', 'reference session')
+)
+
+db.define_table(
+    'comment',
+    Field('session_id', 'reference session'),
+    Field('user_id', default=get_user_id),
+    Field('first_name', default=get_first_name),
+    Field('last_name', default=get_last_name),
+    Field('content'),
+    Field("timestamp")
 )
 
 db.commit()
