@@ -1,0 +1,44 @@
+[[extend 'layout.html']]
+
+[[block page_head]]<style>[v-cloak]{display:none;}</style>[[end]]
+
+[[block page_menu_items]][[end]]
+
+[[
+sidebar_items=[
+  dict(endpoint='index',label='Home',icon='home'),
+  dict(endpoint='dashboard',label='Dashboard',icon='rss'),
+  dict(endpoint='sessions',label='My Sessions',icon='calendar'),
+  dict(endpoint='find_session',label='Find Session',icon='search'),
+  dict(endpoint='create_session',label='Create Session',icon='plus'),
+  dict(endpoint='profile',label='Profile',icon='user-circle'),
+]
+]]
+<div class="columns is-mobile">
+  <aside class="column is-narrow" id="vue-sidebar" v-cloak>
+    <ul class="menu-list">
+    [[for item in sidebar_items:]]
+      <li>
+        <a href="[[=URL(item['endpoint'])]]"
+          v-bind:class="{'is-active':'[[=item['endpoint']]]'==endpoint}" >
+          <span class="icon">
+            <i class="fa fa-[[=item['icon']]]"></i>
+          </span>
+          <span>[[=item['label']]]</span>
+        </a>
+      </li>
+    [[pass]]
+  </ul>
+  </aside>
+  <div class="column">[[include]]</div>
+</div>
+
+[[block page_scripts]]
+<script>
+  let pathname = this.location.pathname;
+  let sidebar_vue = new Vue({
+    el:'#vue-sidebar',
+    data:{endpoint:pathname.slice(pathname.indexOf('/',1)+1)},
+  });
+</script>
+[[end]]

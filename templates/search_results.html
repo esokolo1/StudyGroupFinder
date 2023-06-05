@@ -1,10 +1,7 @@
-[[extend 'layout.html']]
+[[extend 'sidebar_layout.html']]
 
-<style>
-  [v-cloak] {
-    display: none;
-  }
-</style>
+[[block page_head]]
+[[super]]
 <style>
   select,
   input {
@@ -12,47 +9,16 @@
     box-sizing: border-box;
   }
 </style>
+[[end]]
 
 <div class="section" id="vue-target" v-cloak>
   <div class="columns is-fullheight is-narrow-mobile">
-    <!--Navigation-->
-    <aside
-      class="main-content column is-2 is-narrow-mobile is-fullheight is-mobile"
-    >
-      <ul class="menu-list">
-        <!--Home-->
-        <li>
-          <a href="[[=URL('index')]]" class="">
-            <span class="icon"><i class="fa fa-home"></i></span> Home
-          </a>
-        </li>
-        <!--Schedule-->
-        <li>
-          <a href="[[=URL('dashboard')]]" class="">
-            <span class="icon"><i class="fa fa-calendar"></i></span> Schedule
-          </a>
-        </li>
-        <!--Find a session-->
-        <li>
-          <a href="[[=URL('find_session')]]" class="is-active">
-            <span class="icon"><i class="fa fa-search"></i></span> Find Session
-          </a>
-        </li>
-        <!--Create a session-->
-        <li>
-          <a href="[[=URL('create_session_results')]]" class="">
-            <span class="icon"><i class="fa fa-calendar-plus-o"></i></span>
-            Create Session
-          </a>
-        </li>
-      </ul>
-    </aside>
-    <!---->
     <div v-for="result in session_list">{{result}}</div>
   </div>
 </div>
 
 [[block page_scripts]]
+[[super]]
 <script>
   let get_session_list_url = "[[=XML(get_session_list_url)]]";
   let get_search_results_url = "[[=XML(get_search_results_url)]]";
