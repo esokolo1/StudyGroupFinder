@@ -84,7 +84,7 @@
               </div>
               <div v-else>
                 <div class="field">
-                  <div class="control"><button class="button" @click="get_comments([[session['id']]])">Click to Show Comments</button></div>
+                  <div class="control"><button class="button" @click="get_comments([[=session['id']]])">Click to Show Comments</button></div>
                 </div>
               </div>
             </div>
@@ -97,7 +97,7 @@
                   <textarea class="textarea" placeholder="What's on your mind?" rows="2" v-model="new_comment"></textarea>
                 </div>
                 <div class="field">
-                  <div class="control"><button class="button is-link" @click="add_comment([[session['id']]])">Publish!</button></div>
+                  <div class="control"><button class="button is-link" @click="add_comment([[=session['id']]])">Publish!</button></div>
                 </div>
 
                 <!-- display comments -->
