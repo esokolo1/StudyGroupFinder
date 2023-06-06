@@ -2,7 +2,6 @@
 // and be used to initialize it.
 let app = {};
 
-
 // Given an empty app object, initializes it filling its attributes,
 // creates a Vue instance, and then initializes the Vue instance.
 let init = (app) => {
@@ -165,8 +164,7 @@ let init = (app) => {
     app.init = () => {
         // Put here any initialization code.
         // Typically this is a server GET call to load the data.
-        app.load_page(); 
-        
+        app.load_page();
     };
 
     // Call to the initializer.

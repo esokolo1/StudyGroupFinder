@@ -1,0 +1,139 @@
+[[extend 'sidebar_layout.html']]
+
+<div class="section" id="vue-target" v-cloak>
+
+  <!--account-->
+  <div class="block" style="width:480px">
+    <p class="subtitle">Account</p>
+    <fieldset>
+      <div class="field is-horizontal">
+        <div class="field-label">
+          <label class="label">Email</label>
+        </div>
+        <div class="field-body">
+          <div class="field">
+            <div class="control">
+              <input class="input" type="text" disabled
+                v-model="email" >
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="field is-horizontal">
+        <div class="field-label">
+          <label class="label">Password</label>
+        </div>
+        <div class="field-body">
+          <div class="field">
+            <div class="control">
+              <a class="button" href="[[=URL('auth/change_password')]]">
+                Change Password
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </fieldset>
+  </div>
+
+  <!--profile-->
+  <div class="block" style="width:480px;">
+    <p class="subtitle">Profile</p>
+    <fieldset>
+      <div class="field is-horizontal">
+        <div class="field-label">
+          <label class="label">Name</label>
+        </div>
+        <div class="field-body">
+          <div class="field is-grouped">
+            <div class="control">
+              <input class="input" type="text"
+                placeholder="first name"
+                v-model="first_name" >
+              <p class="help is-danger"
+                v-if="!is_valid_name" >
+                a name is required
+              </p>
+            </div>
+            <div class="control">
+              <input class="input" type="text"
+                placeholder="last name"
+                v-model="last_name" >
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="field is-horizontal">
+        <div class="field-label">
+          <label class="label">About</label>
+        </div>
+        <div class="field-body">
+          <div class="field">
+            <div class="control">
+              <textarea class="textarea has-fixed-size"
+                placeholder="description"
+                v-model="description" >
+              </textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="field is-horizontal">
+        <div class="field-label">
+          <label class="label">Schools</label>
+        </div>
+        <div class="field-body">
+          <item-search
+            item_name="school"
+            v-bind:min_items="min_selected_schools"
+            search_url="[[=XML(get_schools_url)]]"
+            v-bind:selected_items="selected_schools" >
+          </item-search>
+        </div>
+      </div>
+      <div class="field is-horizontal">
+        <div class="field-label">
+          <label class="label">Courses</label>
+        </div>
+        <div class="field-body">
+          <item-search
+            item_name="course"
+            v-bind:min_items="min_selected_courses"
+            search_url="[[=XML(get_courses_url)]]"
+            v-bind:selected_items="selected_courses" >
+          </item-search>
+        </div>
+      </div>
+      <div class="field is-horizontal">
+        <div class="field-label"></div>
+        <div class="field-body">
+          <div class="field">
+            <div class="control">
+              <button class="button is-primary"
+              v-bind:disabled="!is_valid"
+              v-bind:class="{'is-loading':!is_saved}"
+              @click="save_profile" >
+                Save Profile
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </fieldset>
+  </div>
+
+</div>
+
+[[block page_scripts]]
+[[super]]
+<script>
+  //get_schools_url
+  //get_courses_url
+  let get_enrolled_schools_url="[[=XML(get_enrolled_schools_url)]]";
+  let get_enrolled_courses_url="[[=XML(get_enrolled_courses_url)]]";
+  let get_profile_url="[[=XML(get_profile_url)]]";
+  let save_profile_url="[[=XML(save_profile_url)]]";
+</script>
+<script src="js/item_search.js"></script>
+<script src="js/profile.js"></script>
+[[end]]

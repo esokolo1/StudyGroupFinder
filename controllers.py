@@ -26,23 +26,18 @@ Warning: Fixtures MUST be declared with @action.uses({fixtures}) else your app w
 """
 
 from py4web import action, request, abort, redirect, URL, Field
+from py4web.utils.form import Form, FormStyleBulma
+from pydal.validators import *
 from yatl.helpers import A
-
 from .common import db, session, T, cache, auth, logger, authenticated, unauthenticated, flash
 from py4web.utils.url_signer import URLSigner
 from .models import get_user_email, get_user_id, get_time
-from pydal.validators import *
-
-from py4web.utils.form import Form, FormStyleBulma
 
 import datetime
-import pytz
-from pytz import timezone
 
 # Source: adding images - https://github.com/learn-py4web/star_ratings
 
 url_signer = URLSigner(session)
-
 
 @action('index')
 @action.uses('index.html', db, auth, url_signer)
@@ -54,6 +49,12 @@ def index():
         get_session_list_url = URL('get_session_list', signer=url_signer)
     )
 
+######
+@action('testing', method=['GET'])
+@action.uses('testing.html', db, auth)
+def testing():
+  return dict(
+  )
 
 @action('create_session', method=["GET", "POST"])
 @action.uses('create_session.html', db, session, auth.user, url_signer)
@@ -61,7 +62,7 @@ def create_session():
     form = Form(
         [Field('Session_Name', requires = IS_NOT_EMPTY(error_message="Error: Enter Study Group Session Name")),
          Field('School', requires = IS_NOT_EMPTY(error_message="Error: Enter School Name")),
-         Field('Term', requires = IS_NOT_EMPTY(error_message="Error: Enter Term (ex. Spring 2023)")),
+         Field('Term', requires = IS_IN_SET(['Spring 2023','Summer 2023', 'Fall 2023', 'Winter 2024'])), # requires = IS_NOT_EMPTY(error_message="Error: Enter Term (ex. Spring 2023)")), 
          Field('Class_Name', requires = IS_NOT_EMPTY(error_message="Error: Enter Class Name (ex. CSE 183)")),
          Field('Location', requires = IS_NOT_EMPTY(error_message="Error: Enter Location (ex. Kresge Clrm 327)")),
          Field('Description', 'text', requires = IS_NOT_EMPTY(error_message="Error: Enter Description")),
@@ -93,8 +94,7 @@ def create_session():
             session_id=id
         )
         redirect(URL('create_session_results'))
-    return dict(form=form,
-                )
+    return dict(form=form)
 
 
 @action('create_session_results')
@@ -140,7 +140,7 @@ def edit_session(attendance_id):
     form = Form([
             Field('Session_Name', requires = IS_NOT_EMPTY(error_message="Error: Enter Study Group Session Name")), 
             Field('School', requires = IS_NOT_EMPTY(error_message="Error: Enter School Name")), 
-            Field('Term', requires = IS_NOT_EMPTY(error_message="Error: Enter Term (ex. Spring 2023)")), 
+            Field('Term', requires = IS_IN_SET(['Spring 2023','Summer 2023', 'Fall 2023', 'Winter 2024'])), # requires = IS_NOT_EMPTY(error_message="Error: Enter Term (ex. Spring 2023)")), 
             Field('Open', requires = IS_IN_SET([True, False]), default=True), 
             Field('Class_Name', requires = IS_NOT_EMPTY(error_message="Error: Enter Class Name (ex. CSE 183)")), 
             Field('Location', requires = IS_NOT_EMPTY(error_message="Error: Enter Location (ex. Kresge Clrm 327)")), 
@@ -216,26 +216,25 @@ def dashboard():
 @action.uses(db, auth.user, url_signer.verify())
 def get_session_list():
     # My Enrolled Sessions (vue.js)
-    sessions = db(db.attendance.email == get_user_email()).select().as_list()
+    sessions = db(db.attendance.user_id == get_user_id()).select().as_list()
     for s in sessions:
         session_info = db(db.session.id == s["session_id"]).select()
         for info in session_info:
             s["session_name"] = info.session_name
-            s["owner"] = info.owner
-            s["school"] = info.school
-            s["term"] = info.term
-            s["open"] = info.open
-            s["class_name"] = info.class_name
-            s["location"] = info.location
-            s["description"] = info.description
-            s["date"] = info.date
-            s["starttime"] = info.starttime
-            s["endtime"] = info.endtime
-            s["announcement"] = info.announcement
-            s["official"] = info.official
-            s["max_num_students"] = info.max_num_students
-            s["num_students"] = info.num_students
-
+            s["owner"] = info.user_id
+            s["school"] = 'tmp'#TODO:get school based on course_id
+            s["term"] = 'tmp'#TODO
+            s["open"] = info.session_is_open
+            s["class_name"] = info.course_id#TODO:get course name
+            s["location"] = info.session_location
+            s["description"] = info.session_description
+            s["date"] = info.session_days
+            s["starttime"] = info.session_time
+            s["endtime"] = info.session_time#TODO:use length instead
+            s["announcement"] = 'tmp'#TODO:get announcement from post
+            s["official"] = info.has_tas
+            s["max_num_students"] = info.session_capacity
+            s["num_students"] = 0#TODO:determine from attendance
 
             # convert string Date to datetime object
             convertDate = datetime.datetime.strptime(s["date"], '%Y-%m-%d')
@@ -411,3 +410,111 @@ def add_reply():
     comment = request.json.get("new_comment")
     db.comment.insert(session_id=id, content=comment, timestamp=get_time().isoformat())
     return "ok"
+
+#############
+#helper
+def course_string(course_row):
+  return (
+    course_row.course_subject + ' ' +
+    course_row.course_number + ' ' +
+    (course_row.course_title or '')
+  )
+###
+@action('get_schools', method=['GET'])
+@action.uses(db, url_signer.verify())
+def get_schools():
+  search_query = request.params.get('query') or ''
+  search_query = search_query.lower()
+  db_query = (
+    db.school.school_name.lower().like('%'+search_query+'%') |
+    db.school.school_abbr.lower().like('%'+search_query+'%')
+  )
+  school_list = [
+    dict(id=row.id, name=row.school_name)
+    for row in db(db_query).select()
+  ]
+  return dict(r=school_list)
+@action('get_courses', method=['GET'])
+@action.uses(db, auth.user, url_signer.verify())
+def get_course_list():
+  search_query = request.params.get('query') or ''
+  search_query = search_query.lower()
+  db_query = (
+    db.course.course_subject.lower().like('%'+search_query+'%') |
+    db.course.course_number.lower().like('%'+search_query+'%') |
+    db.course.course_title.lower().like('%'+search_query+'%')
+  )
+  course_list = [
+    dict(id=row.id, name=course_string(row))
+    for row in db(db_query).select()
+  ]
+  return dict(r=course_list)
+@action('get_enrolled_schools', method=['GET'])
+@action.uses(db, auth, auth.user, url_signer.verify())
+def get_enrolled_schools():
+  enrolled_schools = [
+    dict(id=s.school_id, name=db.school[s.school_id].school_name)
+    for s in db(db.school_enrollment.user_id==get_user_id()).select()
+  ]
+  return dict(r=enrolled_schools)
+@action('get_enrolled_courses', method=['GET'])
+@action.uses(db, auth, auth.user, url_signer.verify())
+def get_enrolled_courses():
+  enrolled_courses = [
+    dict(id=c.course_id, name=course_string(db.course[c.course_id]))
+    for c in db(db.course_enrollment.user_id==get_user_id()).select()
+  ]
+  return dict(r=enrolled_courses)
+@action('get_profile', method=['GET'])
+@action.uses(db, auth, auth.user, url_signer.verify())
+def get_profile():
+  email = auth.current_user.get('email')
+  first_name = auth.current_user.get('first_name')
+  last_name = auth.current_user.get('last_name')
+  profile_row = db(db.profile.user_id==get_user_id()).select().first()
+  description = profile_row.profile_description if profile_row else ''
+  return dict(
+    email=email,
+    first_name=first_name,
+    last_name=last_name,
+    description=description,
+  )
+@action('save_profile', method=['POST'])
+@action.uses(db, auth, auth.user, url_signer.verify())
+def save_profile():
+  first_name = request.json.get('first_name')
+  last_name = request.json.get('last_name')
+  description = request.json.get('description')
+  enrolled_schools = request.json.get('enrolled_schools')
+  enrolled_courses = request.json.get('enrolled_courses')
+  db(db.auth_user.id==get_user_id()).update(
+    first_name=first_name, last_name=last_name )
+  db.profile.update_or_insert(
+    db.profile.user_id==get_user_id(),
+    profile_description=description )
+  db(db.school_enrollment.user_id==get_user_id()).delete()
+  for school in enrolled_schools:
+    db.school_enrollment.update_or_insert(
+      db.school_enrollment.school_id==school['id'],
+      school_id=school['id'] )
+  db(db.course_enrollment.user_id==get_user_id()).delete()
+  for course in enrolled_courses:
+    db.course_enrollment.update_or_insert(
+      db.course_enrollment.course_id==course['id'],
+      course_id=course['id'] )
+  return 'ok'
+@action('profile', method=['GET'])
+@action.uses('profile.html', auth, auth.user, url_signer)
+def profile():
+  if auth.current_user:
+    return dict(
+      get_schools_url=URL('get_schools', signer=url_signer),
+      get_courses_url=URL('get_courses', signer=url_signer),
+      get_enrolled_schools_url=URL('get_enrolled_schools',
+        signer=url_signer),
+      get_enrolled_courses_url=URL('get_enrolled_courses',
+        signer=url_signer),
+      get_profile_url=URL('get_profile', signer=url_signer),
+      save_profile_url=URL('save_profile', signer=url_signer),
+    )
+  redirect(auth, login)
