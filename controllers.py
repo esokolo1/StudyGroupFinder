@@ -27,11 +27,11 @@ Warning: Fixtures MUST be declared with @action.uses({fixtures}) else your app w
 
 from py4web import action, request, abort, redirect, URL, Field
 from py4web.utils.form import Form, FormStyleBulma
+from pydal.validators import *
 from yatl.helpers import A
 from .common import db, session, T, cache, auth, logger, authenticated, unauthenticated, flash
 from py4web.utils.url_signer import URLSigner
 from .models import get_user_email, get_user_id, get_time
-from pydal.validators import *
 
 import datetime
 
@@ -49,6 +49,12 @@ def index():
         get_session_list_url = URL('get_session_list', signer=url_signer)
     )
 
+######
+@action('testing', method=['GET'])
+@action.uses('testing.html', db, auth)
+def testing():
+  return dict(
+  )
 
 @action('create_session', method=["GET", "POST"])
 @action.uses('create_session.html', db, session, auth.user, url_signer)
@@ -427,7 +433,7 @@ def get_schools():
     dict(id=row.id, name=row.school_name)
     for row in db(db_query).select()
   ]
-  return dict(school_list=school_list)
+  return dict(r=school_list)
 @action('get_courses', method=['GET'])
 @action.uses(db, auth.user, url_signer.verify())
 def get_course_list():
@@ -442,7 +448,7 @@ def get_course_list():
     dict(id=row.id, name=course_string(row))
     for row in db(db_query).select()
   ]
-  return dict(course_list=course_list)
+  return dict(r=course_list)
 @action('get_enrolled_schools', method=['GET'])
 @action.uses(db, auth, auth.user, url_signer.verify())
 def get_enrolled_schools():
@@ -450,7 +456,7 @@ def get_enrolled_schools():
     dict(id=s.school_id, name=db.school[s.school_id].school_name)
     for s in db(db.school_enrollment.user_id==get_user_id()).select()
   ]
-  return dict(enrolled_schools=enrolled_schools)
+  return dict(r=enrolled_schools)
 @action('get_enrolled_courses', method=['GET'])
 @action.uses(db, auth, auth.user, url_signer.verify())
 def get_enrolled_courses():
@@ -458,7 +464,7 @@ def get_enrolled_courses():
     dict(id=c.course_id, name=course_string(db.course[c.course_id]))
     for c in db(db.course_enrollment.user_id==get_user_id()).select()
   ]
-  return dict(enrolled_courses=enrolled_courses)
+  return dict(r=enrolled_courses)
 @action('get_profile', method=['GET'])
 @action.uses(db, auth, auth.user, url_signer.verify())
 def get_profile():

@@ -3,16 +3,14 @@ let app = {};
 let init = (app) => {
 
     app.data = {
-      school_search_query:'',
-      course_search_query:'',
-      school_list:[],
-      course_list:[],
       email:'',
       first_name:'',
       last_name:'',
       description:'',
       selected_schools:[],
       selected_courses:[],
+      min_selected_schools:1,
+      min_selected_courses:1,
       is_saved:false,
     };
 
@@ -23,18 +21,18 @@ let init = (app) => {
           || this.last_name.length > 0
         );
       },
-      is_valid:function() {
+      is_valid_form:function() {
         return (
           this.is_valid_name
-          && this.selected_schools.length > 0
-          && this.selected_courses.length > 0
+          && this.selected_schools.length >= this.min_selected_schools
+          && this.selected_courses.length >= this.min_selected_courses
         );
       },
     };
 
     app.methods = {
       save_profile:function() {
-        if (!this.is_not_valid) {
+        if (this.is_valid_form) {
           this.is_saved = false;
           axios.post(save_profile_url,
             {
@@ -48,40 +46,6 @@ let init = (app) => {
             this.is_saved = true;
           });
         }
-      },
-      search_schools:function() {
-        axios.get(
-          get_schools_url,
-          {params:{query:this.school_search_query}},
-        ).then((r) => {
-          this.school_list = r.data.school_list;
-        });
-      },
-      search_courses:function() {
-        axios.get(
-          get_courses_url,
-          {params:{query:this.course_search_query}},
-        ).then((r) => {
-          this.course_list = r.data.course_list;
-        });
-      },
-      toggle_school_select:function(school) {
-        for (let i = 0; i<this.selected_schools.length; i++) {
-          if (this.selected_schools[i].id==school.id) {
-            this.selected_schools.splice(i,1);
-            return;
-          }
-        }
-        this.selected_schools.push(school);
-      },
-      toggle_course_select:function(course) {
-        for (let i = 0; i < this.selected_courses.length; i++) {
-          if (this.selected_courses[i].id == course.id) {
-            this.selected_courses.splice(i,1);
-            return;
-          }
-        }
-        this.selected_courses.push(course);
       },
     };
 
@@ -100,21 +64,13 @@ let init = (app) => {
         app.vue.last_name = r.data.last_name;
         app.vue.description = r.data.description;
       });
-      axios.get(get_schools_url,
-      ).then((r) => {
-        app.vue.school_list = r.data.school_list;
-      });
-      axios.get(get_courses_url,
-      ).then((r) => {
-        app.vue.course_list = r.data.course_list;
-      });
       axios.get(get_enrolled_schools_url,
       ).then((r) => {
-        app.vue.selected_schools = r.data.enrolled_schools;
+        app.vue.selected_schools = r.data.r;
       });
       axios.get(get_enrolled_courses_url,
       ).then((r) => {
-        app.vue.selected_courses = r.data.enrolled_courses;
+        app.vue.selected_courses = r.data.r;
       });
       app.vue.is_saved = true;
     };
@@ -123,3 +79,4 @@ let init = (app) => {
 };
 
 init(app);
+console.log(app.vue);

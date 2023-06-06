@@ -83,40 +83,12 @@
           <label class="label">Schools</label>
         </div>
         <div class="field-body">
-          <div class="field">
-            <div class="control has-icons-left">
-              <input class="input"
-                placeholder="search schools"
-                v-model="school_search_query"
-                @keyup="search_schools" >
-              <span class="icon is-left">
-                <i class="fa fa-search"></i>
-              </span>
-            </div>
-            <div class="control">
-              <div style="max-height:180px;overflow:scroll;">
-                <a class="panel-block"
-                  v-for="school in school_list"
-                  @click="toggle_school_select(school)" >
-                  {{school.name}}
-                </a>
-              </div>
-            </div>
-            <div class="control">
-              <button class="button has-icons-left"
-                v-for="school in selected_schools" >
-                <span class="icon is-left is-clickable"
-                  @click="toggle_school_select(school)" >
-                  <i class="fa fa-remove"></i>
-                </span>
-                <span>{{school.name}}</span>
-              </button>
-            </div>
-            <p class="help is-danger"
-              v-if="selected_schools.length < 1" >
-              at least 1 school is required
-            </p>
-          </div>
+          <item-search
+            item_name="school"
+            v-bind:min_items="min_selected_schools"
+            search_url="[[=XML(get_schools_url)]]"
+            v-bind:selected_items="selected_schools" >
+          </item-search>
         </div>
       </div>
       <div class="field is-horizontal">
@@ -124,40 +96,12 @@
           <label class="label">Courses</label>
         </div>
         <div class="field-body">
-          <div class="field">
-            <div class="control has-icons-left">
-              <input class="input"
-                placeholder="search courses"
-                v-model="course_search_query"
-                @keyup="search_courses" >
-              <span class="icon is-left">
-                <i class="fa fa-search"></i>
-              </span>
-            </div>
-            <div class="control">
-              <div style="max-height:180px;overflow:scroll;">
-                <a class="panel-block"
-                  v-for="course in course_list"
-                  @click="toggle_course_select(course)" >
-                  {{course.name}}
-                </a>
-              </div>
-            </div>
-            <div class="control">
-              <button class="button has-icons-left"
-                v-for="course in selected_courses" >
-                <span class="icon is-left is-clickable"
-                  @click="toggle_course_select(course)" >
-                  <i class="fa fa-remove"></i>
-                </span>
-                <span>{{course.name}}</span>
-              </button>
-            </div>
-            <p class="help is-danger"
-              v-if="selected_courses.length < 1" >
-              at least 1 course is required
-            </p>
-          </div>
+          <item-search
+            item_name="course"
+            v-bind:min_items="min_selected_courses"
+            search_url="[[=XML(get_courses_url)]]"
+            v-bind:selected_items="selected_courses" >
+          </item-search>
         </div>
       </div>
       <div class="field is-horizontal">
@@ -183,12 +127,13 @@
 [[block page_scripts]]
 [[super]]
 <script>
-  let get_schools_url="[[=XML(get_schools_url)]]";
-  let get_courses_url="[[=XML(get_courses_url)]]";
+  //get_schools_url
+  //get_courses_url
   let get_enrolled_schools_url="[[=XML(get_enrolled_schools_url)]]";
   let get_enrolled_courses_url="[[=XML(get_enrolled_courses_url)]]";
   let get_profile_url="[[=XML(get_profile_url)]]";
   let save_profile_url="[[=XML(save_profile_url)]]";
 </script>
+<script src="js/item_search.js"></script>
 <script src="js/profile.js"></script>
 [[end]]
