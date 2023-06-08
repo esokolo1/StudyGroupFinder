@@ -38,6 +38,7 @@ from py4web.utils.form import Form, FormStyleBulma
 import datetime
 import pytz
 from pytz import timezone
+import calendar
 
 # Source: adding images - https://github.com/learn-py4web/star_ratings
 
@@ -51,7 +52,8 @@ def index():
     return dict(
         # COMPLETE: return here any signed URLs you need.
         my_callback_url = URL('my_callback', signer=url_signer),
-        get_session_list_url = URL('get_session_list', signer=url_signer)
+        get_session_list_url = URL('get_session_list', signer=url_signer),
+        calendar_url = URL('calendar_url', signer=url_signer),
     )
 
 
@@ -94,6 +96,8 @@ def create_session():
         )
         redirect(URL('create_session_results'))
     return dict(form=form,
+                get_session_list_url = URL('get_session_list', signer=url_signer),
+                calendar_url = URL('calendar_url', signer=url_signer),
                 )
 
 
@@ -106,6 +110,7 @@ def create_session_results():
         my_callback_url = URL('my_callback', signer=url_signer),
         url_signer = url_signer,
         get_session_list_url = URL('get_session_list', signer=url_signer),
+        calendar_url = URL('calendar_url', signer=url_signer),
     )
 
 
@@ -210,6 +215,8 @@ def delete_contact(attendance_id):
 def dashboard():
     return dict(
         get_session_list_url = URL('get_session_list', signer=url_signer),
+        calendar_url = URL('calendar_url', signer=url_signer),
+        events_url = URL('events_url', signer=url_signer),
     )
 
 @action('get_session_list', method=["GET", "POST"])
@@ -260,6 +267,7 @@ def get_session_list():
 def find_session():
 
     return dict(
+        calendar_url = URL('calendar_url', signer=url_signer),
         get_session_list_url = URL('get_session_list', signer=url_signer),
         search_url=URL('search', signer=url_signer),
         enroll_session_url=URL('enroll_session', signer=url_signer),
@@ -369,7 +377,8 @@ def search():
                                     if(str(ta) in r['official']):
                                         results.append(r)
     return dict(results=results,
-                session_list=session_list)
+                session_list=session_list,
+                calendar_url = URL('calendar_url', signer=url_signer),)
 
 @action('enroll_session', method="POST")
 @action.uses(db, auth.user, url_signer.verify())
@@ -385,3 +394,45 @@ def enroll_session():
         session_id = request.json.get('session_id')
     )
     return "ok"
+
+# Calendar
+@action('calendar_url')
+@action.uses(db, auth.user, url_signer.verify())
+def calendar_url():
+    calendar.setfirstweekday(calendar.SUNDAY)
+    month = request.params.get("month")
+    year = request.params.get("year")
+    if (month != None):
+        month = int(month)
+        year = int(year)
+        month_name = calendar.month_name[month]
+        weeks = calendar.monthcalendar(year,month)
+    else:
+        todayDate = datetime.datetime.now()
+        month = todayDate.month
+        month_name = calendar.month_name[month]
+        year = todayDate.year
+        weeks = calendar.monthcalendar(year,month)
+    # weeks = calendar.TextCalendar(calendar.SUNDAY)
+    # weeks = weeks.itermonthdays(2023, 6)
+
+    return dict(weeks = weeks, month=month, year=year, month_name = month_name)
+
+
+# Calendar
+@action('events_url')
+@action.uses(db, auth.user, url_signer.verify())
+def events_url():
+    events_list = []
+    all_sessions = db(db.session).select().as_list()
+    for each in all_sessions:
+        convertedDate = datetime.datetime.strptime(each["date"], '%Y-%m-%d').date()
+        if (convertedDate.month == int(request.params.get("month"))):
+            if (convertedDate.day == int(request.params.get("date"))):
+                if (convertedDate.year == int(request.params.get("year"))):
+                    print(convertedDate, each)
+                    events_list.append(each)
+        # print(request.params.get("date"))
+        # convertedDate_req = datetime.datetime.strptime(request.params.get("date"), '%Y-%m-%d').date()
+        
+    return dict(events_list = events_list)

@@ -27,6 +27,58 @@ let init = (app) => {
         results: [],
 
         success_enroll: true,
+
+        // Calendar
+        year: "",
+        month: "",
+        month_name: "",
+        date: [],
+        weeks1: [],
+        upcoming_sessions: [],
+        is_clicked: false,
+
+        // hello: "ciao",
+        // 
+        // weeks: [
+        // { // Week 1
+        //     days: [
+        //         { // day 1
+        //             name: "Monusday",
+        //             events: [{title: "Lunch", content: "At cafe"},
+        //                      {title: "Dinner", content: "With Jim"}],
+        //         },
+        //         { // day 1
+        //             name: "Frituray",
+        //             events: [{title: "Lunch", content: "At cafe"},
+        //                      {title: "Dinner", content: "With Jim"}],
+        //         },
+
+        //     ]
+
+        // },
+        // {}, //Week 2
+
+    // ]
+    };
+
+    // app.get_calendar = function (start_date) {
+    //     weeks = axios.get(calendar_url, {params: {start_date: start_date}})
+    //     .then(function (r) {
+    //         app.vue.weeks = r.data.weeks;
+    //     })
+    // }
+
+    app.populate = function () {
+        // week = {};
+        // week.days = [];
+        // weeks = [week];
+        // day_names = ["M", "Tu", "W", "Th", "F", "Sa", "Su"];
+        // for (let i = 0; i < 7; i++) {
+        //     week.days.push(
+        //         {name: day_names[i],
+        //         events: []}
+        //     )
+        // };
     };
 
     app.enumerate = (a) => {
@@ -35,6 +87,115 @@ let init = (app) => {
         a.map((e) => {e._idx = k++;});
         return a;
     };
+
+
+    app.nextCal = function(month, year) {
+        if (month === 12) {
+            app.vue.month = 1;
+            app.vue.year += 1;
+        }
+        else {
+            app.vue.month += 1;
+        }
+        axios.get(calendar_url, {
+            params: {
+                month: app.vue.month,
+                year: app.vue.year}})
+        .then(function(r) {
+            app.vue.month = r.data.month;
+            app.vue.month_name = r.data.month_name;
+            app.vue.year = r.data.year;
+            app.vue.weeks1 = r.data.weeks;
+            for(var i = 0; i < app.vue.weeks1.length; i++) {
+                var week = app.vue.weeks1[i];
+                for(var j = 0; j < week.length; j++) {
+                    if (app.vue.weeks1[i][j] === 0) {
+                        app.vue.weeks1[i][j] = null;
+                    }
+                }
+            }
+            app.vue.is_clicked = false;
+        });
+    }
+    app.prevCal = function(month, year) {
+        if (month === 1) {
+            app.vue.month = 12;
+            app.vue.year -= 1;
+        }
+        else {
+            app.vue.month -= 1;
+        }
+        axios.get(calendar_url, {
+            params: {
+                month: app.vue.month,
+                year: app.vue.year}})
+        .then(function(r) {
+            app.vue.month = r.data.month;
+            app.vue.month_name = r.data.month_name;
+            app.vue.year = r.data.year;
+            app.vue.weeks1 = r.data.weeks;
+            for(var i = 0; i < app.vue.weeks1.length; i++) {
+                var week = app.vue.weeks1[i];
+                for(var j = 0; j < week.length; j++) {
+                    if (app.vue.weeks1[i][j] === 0) {
+                        app.vue.weeks1[i][j] = null;
+                    }
+                }
+            }
+            app.vue.is_clicked = false;
+        });
+    }
+
+    //Create Calendar
+    app.createCalendar = function() {
+        axios.get(calendar_url)
+        .then(function (r) {
+            app.vue.month = r.data.month;
+            app.vue.month_name = r.data.month_name;
+            app.vue.year = r.data.year;
+            app.vue.weeks1 = r.data.weeks;
+            for(var i = 0; i < app.vue.weeks1.length; i++) {
+                var week = app.vue.weeks1[i];
+                for(var j = 0; j < week.length; j++) {
+                    if (app.vue.weeks1[i][j] === 0) {
+                        app.vue.weeks1[i][j] = null;
+                    }
+                }
+            }
+            app.vue.is_clicked = false;
+
+        });
+   
+    }
+
+    app.getEvents = function(month, cell, year) {
+        app.vue.date = []
+        app.vue.date.push(cell);
+        app.vue.is_clicked = true;
+        axios.get(events_url, {
+            params: {
+                month: app.vue.month,
+                date: app.vue.date[0],
+                year: app.vue.year}})
+            .then(function(response) {
+                app.vue.upcoming_sessions= response.data.events_list;
+                // for (let i = 0; i < app.vue.upcoming_sessions.length; i++) {
+                //     console.log(app.vue.upcoming_sessions[i]["starttime"])
+                // }
+                // sort by starttime
+                app.vue.upcoming_sessions.sort((a, b) => (a.starttime > b.starttime) ? 1 : -1)
+                for (let i = 0; i < app.vue.upcoming_sessions.length; i++) {
+                    console.log(app.vue.upcoming_sessions[i]["starttime"].format("H:MM"))
+                    //     console.log(app.vue.upcoming_sessions[i]["starttime"])
+
+                }
+            });
+    }
+
+
+    app.closeEvents = function() {
+        app.vue.is_clicked=false;
+    }
 
     // SEARCH FUNCTION
     app.search = function() {
@@ -93,7 +254,12 @@ let init = (app) => {
                     }
                     
                 }
-            });        
+            }); 
+            // today = new Date();
+            // currentMonth = today.getMonth();
+            // currentYear = today.getFullYear();
+            app.createCalendar();
+
     }
 
     app.enroll_session = function(session_id) {
@@ -115,6 +281,13 @@ let init = (app) => {
         load_page: app.load_page,
         enroll_session: app.enroll_session,
         search: app.search,
+        
+        createCalendar: app.createCalendar,
+        getEvents: app.getEvents,
+        closeEvents: app.closeEvents,
+        prevCal: app.prevCal,
+        nextCal: app.nextCal,
+        
     };
 
     // This creates the Vue instance.

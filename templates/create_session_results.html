@@ -21,7 +21,7 @@
             <!--Schedule-->
             <li>
               <a href="[[=URL('dashboard')]]" class="">
-                <span class="icon"><i class="fa fa-comments-o" aria-hidden="true"></i></span> Dashboard
+                <span class="icon"><i class="fa fa-calendar" aria-hidden="true"></i></span> Schedule
               </a>
             </li>
             <!--Find a session-->
@@ -86,9 +86,9 @@
                               Remove
                             </a>
                           </td>
-                          <td>
+                          <!-- <td>
                             <a :href="r.calendar">Add to Google Calendar</a>
-                          </td>
+                          </td> -->
                         </tr>
                         [[pass]]
                     </tbody>
@@ -102,6 +102,7 @@
 [[block page_scripts]]
 <!-- Loads the index-specific js for Vue -->
 <script>
+  let calendar_url = "[[=XML(calendar_url)]]";
   let my_callback_url = "[[=XML(my_callback_url)]]";
   let get_session_list_url = "[[=XML(get_session_list_url)]]";
 </script>
