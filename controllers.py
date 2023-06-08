@@ -44,7 +44,7 @@ import calendar
 
 url_signer = URLSigner(session)
 
-
+# Home/Main Page
 @action('index')
 @action.uses('index.html', db, auth, url_signer)
 def index():
@@ -56,7 +56,7 @@ def index():
         calendar_url = URL('calendar_url', signer=url_signer),
     )
 
-
+# create_session page (where user can create new study group session)
 @action('create_session', method=["GET", "POST"])
 @action.uses('create_session.html', db, session, auth.user, url_signer)
 def create_session():
@@ -76,6 +76,7 @@ def create_session():
          formstyle=FormStyleBulma,
          csrf_session=session
     )
+    # if form accepted, insert id to db.session, add user email and session_id to db.attendance
     if form.accepted:
         id = db.session.insert(
             session_name=form.vars["Session_Name"],
@@ -94,19 +95,18 @@ def create_session():
             email=get_user_email(),
             session_id=id
         )
+        # redirect to create_session_results.html
         redirect(URL('create_session_results'))
     return dict(form=form,
                 get_session_list_url = URL('get_session_list', signer=url_signer),
-                calendar_url = URL('calendar_url', signer=url_signer),
-                )
+                calendar_url = URL('calendar_url', signer=url_signer),)
 
-
+# create_session_results page - user can view all study group session they are currently enrolled in 
 @action('create_session_results')
 @action.uses('create_session_results.html', db, session, auth.user, url_signer)
 def create_session_results():
 
     return dict(
-        # COMPLETE: return here any signed URLs you need.
         my_callback_url = URL('my_callback', signer=url_signer),
         url_signer = url_signer,
         get_session_list_url = URL('get_session_list', signer=url_signer),
@@ -114,7 +114,7 @@ def create_session_results():
     )
 
 
-# Edit session
+# Edit session - only user who creates the study session can edit
 @action('edit_session/<attendance_id:int>', method=["GET", "POST"])
 @action.uses('edit_session.html', db, session, auth.user, url_signer.verify())
 def edit_session(attendance_id):
@@ -141,7 +141,7 @@ def edit_session(attendance_id):
 
     if session_row is None:
         redirect(URL('create_session_results'))
-    
+    # form where user can edit session name, school, term etc 
     form = Form([
             Field('Session_Name', requires = IS_NOT_EMPTY(error_message="Error: Enter Study Group Session Name")), 
             Field('School', requires = IS_NOT_EMPTY(error_message="Error: Enter School Name")), 
@@ -174,7 +174,7 @@ def edit_session(attendance_id):
             deletable=False,
             csrf_session=session,
             formstyle=FormStyleBulma)
-    
+    # if form accepts, update db.session (session_row)
     if form.accepted:
         session_row.update_record(
             session_name = form.vars["Session_Name"], 
@@ -192,10 +192,9 @@ def edit_session(attendance_id):
         redirect(URL('create_session_results'))
     
     return dict(form=form, 
-    url_signer = url_signer,
-    )
+    url_signer = url_signer,)
 
-# Delete Session
+# Delete Session - only user who create the session can delete
 @action('delete_session/<attendance_id:int>')
 @action.uses(db, session, auth.user, url_signer.verify())
 def delete_contact(attendance_id):
@@ -206,24 +205,17 @@ def delete_contact(attendance_id):
     # only user who create this session can delete
     if (session_row.owner == get_user_id()):
         db(db.session.id == get_attendance_row.session_id).delete()
-
+    # redirect to create_session_results page
     redirect(URL('create_session_results'))
 
-
-@action('dashboard', method=["GET", "POST"])
-@action.uses('dashboard.html',db, auth.user, url_signer)
-def dashboard():
-    return dict(
-        get_session_list_url = URL('get_session_list', signer=url_signer),
-        calendar_url = URL('calendar_url', signer=url_signer),
-        events_url = URL('events_url', signer=url_signer),
-    )
-
+# get_session_list - extract only sessions that user added/created 
+# (used in create_session results page)
 @action('get_session_list', method=["GET", "POST"])
 @action.uses(db, auth.user, url_signer.verify())
 def get_session_list():
-    # My Enrolled Sessions (vue.js)
+    # db.attendance email match user's email
     sessions = db(db.attendance.email == get_user_email()).select().as_list()
+    # check if db.session id match db.attendance session_id
     for s in sessions:
         session_info = db(db.session.id == s["session_id"]).select()
         for info in session_info:
@@ -243,25 +235,24 @@ def get_session_list():
             s["max_num_students"] = info.max_num_students
             s["num_students"] = info.num_students
 
-
             # convert string Date to datetime object
             convertDate = datetime.datetime.strptime(s["date"], '%Y-%m-%d')
             # change date format
             changeDateFormat = convertDate.strftime("%Y%m%d")
+            # calendar - link to google calendar create events
             s["calendar"] = 'https://calendar.google.com/calendar/render?action=TEMPLATE&text=' + s["session_name"] + '&details=' + s["description"] + '&dates=' + changeDateFormat + 'T' + s["starttime"]+ '/' + changeDateFormat + 'T' + s["endtime"] + '&location=' + s["location"]
 
-
+            # edit_session html
             s["edit"] = URL('edit_session', s["id"], signer=url_signer)
+            # delete session
             s["delete"] = URL('delete_session', s["id"], signer=url_signer)
-
-            s["discussion"] =  URL('discussion', info.id, signer=url_signer)
     
     return dict(
         session_list = sessions,
         url_signer = url_signer,
-        owner = get_user_id(),
-    )
+        owner = get_user_id(),)
 
+# find_session page - user can search sessions by class, school name etc
 @action('find_session', method=["GET", "POST"])
 @action.uses('find_session.html', db, session, auth.user, url_signer)
 def find_session():
@@ -273,11 +264,12 @@ def find_session():
         enroll_session_url=URL('enroll_session', signer=url_signer),
     )
 
-
+# search function (used in find_session page)
 @action('search')
 @action.uses(db, auth.user, url_signer.verify())
 def search():
-    school = request.params.get("school") # what I typed in search bar
+    # what user typed in search bar
+    school = request.params.get("school") 
     term = request.params.get("term")
     status = request.params.get("status")
     open_status = "True"
@@ -292,8 +284,7 @@ def search():
     meeting_end = request.params.get("meeting_end")
     ta = request.params.get("ta")
 
-
-    # List of sessions that user who is logged in NOT ENROLLED YET
+    # List of sessions that user who is logged in has not enrolled yet
     session_list_not_enrolled = []
     attendance_list = db(db.attendance).select().as_list()
     session_list = db(db.session).select().as_list()
@@ -304,7 +295,7 @@ def search():
             if (each_session["id"] == each_attendance["session_id"]):
                 # add all attendance user email to email_list
                 email_list.append(each_attendance["email"])
-        # if there is NO user who is logged in in the email list -> user is not enrolled in that session yet
+        # if there is NO user who is logged in in the email list -> user has not enrolled in that session yet
         if (get_user_email() not in email_list):
             # add that session to "session_list_not_enrolled" list
             session_list_not_enrolled.append(each_session)
@@ -315,12 +306,6 @@ def search():
     # search results
     results = []
     for r in session_list:
-        # str(school) -> what user typed in search bar
-        # r["school"] -> iterate through list of sessions, only extract school name
-        # if r['school'] contains what user typed in search bar, append to results list
-        # .lower() -> convert search input to lowercase
-
-        # ADD CODE HERE (term, status, classname, location, meeting date, starttime, endtime, attendance)
         if (len(str(meeting_start)) > 0):
             start_hr = int(meeting_start[:2])
             start_m = int(meeting_start[3:5]);
@@ -331,7 +316,7 @@ def search():
             print("valid end")
             end_hr = int(meeting_end[:2])
             end_m = int(meeting_end[3:5])
-        # print(len(str(meeting_end)))
+
         official_end_hr = int(r['endtime'][:2])
         official_end_m = int(r['endtime'][3:5])
 
@@ -380,59 +365,77 @@ def search():
                 session_list=session_list,
                 calendar_url = URL('calendar_url', signer=url_signer),)
 
+# enroll_session - In find_session page, user can enroll sessions created by others
 @action('enroll_session', method="POST")
 @action.uses(db, auth.user, url_signer.verify())
 def enroll_session():
+    # extract which session user wants to enroll
     session_id = request.json.get('session_id')
-    # print('check', session_id)
+    # db.session
     session_list = db(db.session).select()
-    # update num_students
+    # update num_students in db.session
     db(db.session.id == session_id).update(num_students = db.session.num_students + 1)
     # add user email to attendance table
     db.attendance.insert(
         email = get_user_email(),
-        session_id = request.json.get('session_id')
-    )
+        session_id = request.json.get('session_id'))
     return "ok"
 
-# Calendar
+# Dashboard - user can check all study session schedule
+@action('dashboard', method=["GET", "POST"])
+@action.uses('dashboard.html',db, auth.user, url_signer)
+def dashboard():
+    return dict(
+        get_session_list_url = URL('get_session_list', signer=url_signer),
+        calendar_url = URL('calendar_url', signer=url_signer),
+        events_url = URL('events_url', signer=url_signer),)
+
+# Calendar - used in dashboard page, always displays this month calendar,
+#            Clicking left/right arrow displays prev/next month calendar
 @action('calendar_url')
 @action.uses(db, auth.user, url_signer.verify())
 def calendar_url():
+    # calendar - starts from Sun Mon Tues, etc
     calendar.setfirstweekday(calendar.SUNDAY)
+    # if user clicks left/right arrow, get which calendar month user wants to check
     month = request.params.get("month")
+    # if user clicks left/right arrow, get which calendar year user wants to check
     year = request.params.get("year")
+    # if user clicks left/right arrow:
     if (month != None):
+        # display calendar user wants to see
         month = int(month)
         year = int(year)
+        # month_name (ex. "June", "July")
         month_name = calendar.month_name[month]
+        # weeks - get a matrix representing month's calendar
         weeks = calendar.monthcalendar(year,month)
     else:
+        # if request.params returns None (hasn't clicked left/right arrow yet)
+        # display this month calendar
+        # get today's date, month, month_name and year
         todayDate = datetime.datetime.now()
         month = todayDate.month
         month_name = calendar.month_name[month]
         year = todayDate.year
+        # weeks - get a matrix representing month's calendar
         weeks = calendar.monthcalendar(year,month)
-    # weeks = calendar.TextCalendar(calendar.SUNDAY)
-    # weeks = weeks.itermonthdays(2023, 6)
-
     return dict(weeks = weeks, month=month, year=year, month_name = month_name)
 
-
-# Calendar
+# events_url - used in dashboard page, user can check upcoming sessions schedule
 @action('events_url')
 @action.uses(db, auth.user, url_signer.verify())
 def events_url():
     events_list = []
+    # all_sessions - db.session
     all_sessions = db(db.session).select().as_list()
     for each in all_sessions:
+        # convert db.session date (string) to datetime object
         convertedDate = datetime.datetime.strptime(each["date"], '%Y-%m-%d').date()
+        # check if each study session month, date, year match what user clicks on a calendar
         if (convertedDate.month == int(request.params.get("month"))):
             if (convertedDate.day == int(request.params.get("date"))):
                 if (convertedDate.year == int(request.params.get("year"))):
-                    print(convertedDate, each)
+                    # add db.session row to events_list
                     events_list.append(each)
-        # print(request.params.get("date"))
-        # convertedDate_req = datetime.datetime.strptime(request.params.get("date"), '%Y-%m-%d').date()
-        
     return dict(events_list = events_list)

@@ -36,49 +36,6 @@ let init = (app) => {
         weeks1: [],
         upcoming_sessions: [],
         is_clicked: false,
-
-        // hello: "ciao",
-        // 
-        // weeks: [
-        // { // Week 1
-        //     days: [
-        //         { // day 1
-        //             name: "Monusday",
-        //             events: [{title: "Lunch", content: "At cafe"},
-        //                      {title: "Dinner", content: "With Jim"}],
-        //         },
-        //         { // day 1
-        //             name: "Frituray",
-        //             events: [{title: "Lunch", content: "At cafe"},
-        //                      {title: "Dinner", content: "With Jim"}],
-        //         },
-
-        //     ]
-
-        // },
-        // {}, //Week 2
-
-    // ]
-    };
-
-    // app.get_calendar = function (start_date) {
-    //     weeks = axios.get(calendar_url, {params: {start_date: start_date}})
-    //     .then(function (r) {
-    //         app.vue.weeks = r.data.weeks;
-    //     })
-    // }
-
-    app.populate = function () {
-        // week = {};
-        // week.days = [];
-        // weeks = [week];
-        // day_names = ["M", "Tu", "W", "Th", "F", "Sa", "Su"];
-        // for (let i = 0; i < 7; i++) {
-        //     week.days.push(
-        //         {name: day_names[i],
-        //         events: []}
-        //     )
-        // };
     };
 
     app.enumerate = (a) => {
@@ -89,7 +46,10 @@ let init = (app) => {
     };
 
 
+    // if user clicks right arrow, display next month calendar
     app.nextCal = function(month, year) {
+        // if current month is December, next month = 1
+        // add year + 1
         if (month === 12) {
             app.vue.month = 1;
             app.vue.year += 1;
@@ -117,7 +77,11 @@ let init = (app) => {
             app.vue.is_clicked = false;
         });
     }
+
+    // if user clicks left arrow, display prev month calendar
     app.prevCal = function(month, year) {
+        // if current month is January, prev month is December
+        // subtract year - 1
         if (month === 1) {
             app.vue.month = 12;
             app.vue.year -= 1;
@@ -146,7 +110,7 @@ let init = (app) => {
         });
     }
 
-    //Create Calendar
+    // Create Calendar
     app.createCalendar = function() {
         axios.get(calendar_url)
         .then(function (r) {
@@ -163,11 +127,11 @@ let init = (app) => {
                 }
             }
             app.vue.is_clicked = false;
-
         });
    
     }
 
+    // once user clicks specific date on calendar, schedule card will pop up
     app.getEvents = function(month, cell, year) {
         app.vue.date = []
         app.vue.date.push(cell);
@@ -179,20 +143,12 @@ let init = (app) => {
                 year: app.vue.year}})
             .then(function(response) {
                 app.vue.upcoming_sessions= response.data.events_list;
-                // for (let i = 0; i < app.vue.upcoming_sessions.length; i++) {
-                //     console.log(app.vue.upcoming_sessions[i]["starttime"])
-                // }
                 // sort by starttime
                 app.vue.upcoming_sessions.sort((a, b) => (a.starttime > b.starttime) ? 1 : -1)
-                for (let i = 0; i < app.vue.upcoming_sessions.length; i++) {
-                    console.log(app.vue.upcoming_sessions[i]["starttime"].format("H:MM"))
-                    //     console.log(app.vue.upcoming_sessions[i]["starttime"])
-
-                }
             });
     }
 
-
+    // close upcoming schedule events if user clicks "x" button on schedule page
     app.closeEvents = function() {
         app.vue.is_clicked=false;
     }
@@ -212,29 +168,29 @@ let init = (app) => {
                 meeting_end: app.vue.meeting_end,
                 ta: app.vue.ta,}})
         .then(function(result) {
-
             app.vue.results = result.data.results;
             app.vue.results = app.enumerate(app.vue.results);
-
             // check if num_students < max_num_students or open/closed status == "False"
             for (let i = 0; i < app.vue.results.length; i++) {
+                // if session is closed, user are not allowed to enroll session
                 if (app.vue.results[i].open === "False") {
                     app.vue.results[i].success_enroll = false;
                 }
+                // if num_students < max_num_students, display "enroll" button on search page
                 else if (app.vue.results[i].num_students < app.vue.results[i].max_num_students) {
                     app.vue.results[i].success_enroll = true;
                 }
-                else {
+                else { 
+                    // if num_students >= max_num students, user are not allowed to enroll session
                     app.vue.results[i].success_enroll = false;
                 }
             }
-
             // after we find the search results, set the show_search_results_page = true
             app.vue.show_search_results_page = true;
         });        
     }
 
-
+    // create_session results page (edit/delete, remove button)
     app.load_page = function() {
         axios.get(get_session_list_url)
             .then(function(response) {
@@ -244,24 +200,24 @@ let init = (app) => {
                 for (let i = 0; i < app.vue.session_list.length; i++) {
                     // if session is created by user who is logged in
                     if (app.vue.session_list[i]["owner"] === response.data.owner) {
+                        // display "edit"/"delete" button on create_session_results page
                         app.vue.session_list[i].add_edit_status = true;
                         app.vue.session_list[i].remove_delete_status = true;
                     }
                     else {
+                        // else session is created by others
+                        // display "remove" button on create_session_results page
                         app.vue.session_list[i].add_edit_status = false;
                         app.vue.session_list[i].remove_delete_status = false;
-
-                    }
-                    
+                    }    
                 }
             }); 
-            // today = new Date();
-            // currentMonth = today.getMonth();
-            // currentYear = today.getFullYear();
+            // createCalendar - schedule/dashboard page
             app.createCalendar();
-
     }
 
+    // enroll_session - user can enroll session in find_session.html
+    // after user clicks "enroll", enrolled session will be displayed on create_session_results page
     app.enroll_session = function(session_id) {
         axios.post(enroll_session_url,
         {
@@ -270,6 +226,7 @@ let init = (app) => {
 
         }).then(function(response) {
             app.vue.results = response.data.results;
+            // reload app.search page
             app.search();
         });
                
@@ -301,6 +258,8 @@ let init = (app) => {
     app.init = () => {
         // Put here any initialization code.
         // Typically this is a server GET call to load the data.
+        
+        // app.load_page - create_session_results page
         app.load_page(); 
         
     };
