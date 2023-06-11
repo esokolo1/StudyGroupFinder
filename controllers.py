@@ -56,46 +56,33 @@ def testing():
   return dict(
   )
 
-@action('create_session', method=["GET", "POST"])
-@action.uses('create_session.html', db, session, auth.user, url_signer)
-def create_session():
-    form = Form(
-        [Field('Session_Name', requires = IS_NOT_EMPTY(error_message="Error: Enter Study Group Session Name")),
-         Field('School', requires = IS_NOT_EMPTY(error_message="Error: Enter School Name")),
-         Field('Term', requires = IS_IN_SET(['Spring 2023','Summer 2023', 'Fall 2023', 'Winter 2024'])), # requires = IS_NOT_EMPTY(error_message="Error: Enter Term (ex. Spring 2023)")), 
-         Field('Class_Name', requires = IS_NOT_EMPTY(error_message="Error: Enter Class Name (ex. CSE 183)")),
-         Field('Location', requires = IS_NOT_EMPTY(error_message="Error: Enter Location (ex. Kresge Clrm 327)")),
-         Field('Description', 'text', requires = IS_NOT_EMPTY(error_message="Error: Enter Description")),
-         Field('Date', 'date', requires=IS_DATE_IN_RANGE(format=('%Y-%m-%d'),minimum=datetime.date.today(), error_message='Error: Date cannot be in the past')), 
-         Field('Starttime', 'time', requires=IS_TIME()), 
-         Field('Endtime', 'time', requires=IS_TIME()), 
-         Field('Announcement', 'text'), 
-         Field('TA_or_Student_Led', label="TA/Tutor Attendance or Student Led", requires = IS_IN_SET(['TA/Tutor', 'Student Led'], zero=T('choose one'), error_message="Error: Choose One")),
-         Field('Maximum_Number_of_Students', requires=IS_INT_IN_RANGE(0, 1e6))],
-         formstyle=FormStyleBulma,
-         csrf_session=session
-    )
-    if form.accepted:
-        id = db.session.insert(
-            session_name=form.vars["Session_Name"],
-            school=form.vars["School"],
-            term=form.vars["Term"],
-            class_name=form.vars["Class_Name"],
-            location=form.vars["Location"],
-            description=form.vars["Description"],
-            date=form.vars["Date"],
-            starttime=form.vars["Starttime"],
-            endtime=form.vars["Endtime"],
-            official=form.vars["TA_or_Student_Led"],
-            max_num_students=form.vars["Maximum_Number_of_Students"]
-        )
-        db.attendance.insert(
-            email=get_user_email(),
-            session_id=id
-        )
-        redirect(URL('create_session_results'))
-    return dict(form=form)
+@action('create_new_session', method=['POST'])
+@action.uses(db, auth.user, url_signer.verify())
+def create_new_session():
+  db.session.insert(
+    course_id=request.json.get('course'),
+    session_name=request.json.get('name'),
+    session_description=request.json.get('desc'),
+    session_location=request.json.get('loc'),
+    session_days=request.json.get('days'),
+    session_time=request.json.get('time'),
+    session_length=request.json.get('len'),
+    session_start_date=request.json.get('start'),
+    session_end_date=request.json.get('end'),
+    session_capacity=request.json.get('cap'),
+    session_has_tas=request.json.get('ta'),
+  )
+  return URL('dashboard')
 
+@action('create_session')
+@action.uses('create_session.html', auth.user, url_signer)
+def create_session():
+  return dict(
+    get_enrolled_courses_url=URL('get_enrolled_courses',
+      signer=url_signer),
+    create_new_session_url=URL('create_new_session',
+      signer=url_signer),
+  )
 
 @action('create_session_results')
 @action.uses('create_session_results.html', db, session, auth.user, url_signer)

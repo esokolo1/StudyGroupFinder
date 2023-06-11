@@ -13,21 +13,9 @@ def get_user_email():
 def get_user_id():
     return auth.current_user.get('id') if auth.current_user else None
 
-def get_first_name():
-    return auth.current_user.get('first_name') if auth.current_user else None
-
-def get_last_name():
-    return auth.current_user.get('last_name') if auth.current_user else None
-
 def get_time():
     return datetime.datetime.utcnow()
 
-
-### Define your table below
-#
-# db.define_table('thing', Field('name'))
-#
-## always commit your models to avoid problems later
 
 db.define_table(
     'school',
@@ -69,7 +57,7 @@ db.define_table(
 db.define_table(
     'session',
     Field('user_id','reference auth_user',default=get_user_id),
-    Field('course_id','reference course',notnull=True),
+    Field('course_id','reference course'),
     Field('session_name',notnull=True,requires=IS_NOT_EMPTY()),
     Field('session_description','text'),
     Field('session_location',notnull=True,requires=IS_NOT_EMPTY()),

@@ -1,17 +1,191 @@
 [[extend 'sidebar_layout.html']]
 
 <div class="section" id="vue-target" v-cloak>
-  <div class="columns is-fullheight is-narrow-mobile">
+  <h3 class="title has-text-weight-light">
+    New Study Session
+  </h3>
+  <fieldset class="box">
 
-    <!---Create Group Study Session-->
-    <div class="column create_session">
-      <h1 class="title has-text-weight-light is-mobile">Create Group Study Session</h1>
-      <div class="find_session_inputs">
-        <!-- '[add forms here]' -->
-        [[=form]]
-      </div>
+    <div class="field">
+      <p class="control">
+        <input class="input" placeholder="title"
+          v-model="name" >
+      </p>
+      <p class="help is-danger"
+        v-if="name.length < 1">
+        a title is required
+      </p>
     </div>
-    
 
-  </div>
+    <form-row label="Class">
+      <div class="field has-addons">
+        <p class="control">
+          <button class="button is-static">for</button>
+        </p>
+        <p class="control">
+          <span class="select">
+            <select v-model="course">
+              <option value="null">no class (general study session)</option>
+              <option v-for="c in enrolled_courses"
+                v-bind:value="c.id" >
+                {{c.name}}
+              </option>
+            </select>
+          </span>
+        </p>
+      </div>
+    </form-row>
+
+    <form-row label="Details">
+      <div class="field">
+        <p class="control">
+          <textarea class="textarea"
+            placeholder="description" rows="2"
+            v-model="desc" >
+          </textarea>
+        </p>
+      </div>
+    </form-row>
+
+    <form-row label="">
+      <div class="field has-addons">
+        <p class="control">
+          <button class="button is-static">is</button>
+        </p>
+        <p class="control">
+          <span class="select">
+            <select v-model="ta">
+              <option value="false">Student-Led</option>
+              <option value="true">TA-Led</option>
+            </select>
+          </span>
+        </p>
+      </div>
+    </form-row>
+
+    <form-row label="Meeting location">
+      <div class="field">
+        <p class="control">
+          <input class="input"
+            placeholder="location / meeting link"
+            v-model="loc" >
+        </p>
+        <p class="help is-danger"
+          v-if="loc.length < 1">
+          a location / meeting link is required
+        </p>
+      </div>
+    </form-row>
+
+    <form-row label="Maximum capacity">
+      <div class="field has-addons">
+        <p class="control">
+          <input class="input" type="number"
+            min="1" placeholder="none"
+            style="max-width:9rem;"
+            @blur="set_cap"
+            v-model="cap" >
+        </p>
+        <p class="control" v-if="cap">
+          <button class="button"
+            @click="reset_cap" >
+            <span class="icon">
+              <i class="fa fa-times"></i>
+            </span>
+          </button>
+        </p>
+      </div>
+    </form-row>
+
+    <form-row label="Meeting time">
+      <div class="field has-addons">
+        <p class="control">
+          <input class="input" type="time"
+            v-model="start_time" >
+        </p>
+        <p class="control">
+          <button class="button is-static">-</button>
+        </p>
+        <p class="control">
+          <input class="input" type="time"
+            v-model="end_time" >
+        </p>
+        <p class="control">
+          <button class="button is-static">
+            {{Math.floor(duration/60)}} h {{duration%60}} min
+          </button>
+        </p>
+      </div>
+    </form-row>
+
+    <form-row>
+      <div class="field">
+        <p class="control">
+          <label class="checkbox">
+            <input type="checkbox" v-model="is_repeating">
+            Is repeating
+          </label>
+        </p>
+      </div>
+    </form-row>
+
+    <form-row label="Meeting days" v-if="is_repeating">
+      <div class="field">
+        <p class="control">
+          <span class="select is-multiple">
+            <select multiple size="7" v-model="days">
+              <option v-for="day in week_days">{{day}}</option>
+            </select>
+          </span>
+        </p>
+      </div>
+    </form-row>
+
+    <form-row label="Start and end date" v-if="is_repeating">
+      <div class="field is-expanded">
+        <div class="field has-addons">
+          <p class="control">
+            <input class="input" type="date"
+              v-model="start_date" >
+          </p>
+          <p class="control">
+            <button class="button is-static">-</button>
+          </p>
+          <p class="control" v-if="end_date">
+            <input class="input" type="date"
+              v-model="end_date" >
+          </p>
+          <p class="control">
+            <button class="button"
+              @click="toggle_end_date" >
+              <span class="icon" v-if="end_date">
+                <i class="fa fa-times"></i>
+              </span>
+              <span v-else>no end date</span>
+            </button>
+          </p>
+        </div>
+        <p class="help is-danger" v-if="!is_valid_date">
+          end date cannot be before start date
+        </p>
+      </div>
+    </form-row>
+
+    <button class="button is-primary mt-4"
+      v-bind:disabled="!is_valid_form"
+      @click="submit_form" >
+      Create New Session
+    </button>
+
+  </fieldset>
 </div>
+
+[[block page_scripts]]
+[[super]]
+<script>
+  let get_enrolled_courses_url = "[[=XML(get_enrolled_courses_url)]]";
+  let create_new_session_url = "[[=XML(create_new_session_url)]]";
+</script>
+<script src="js/form_row.js"></script>
+<script src="js/create_session.js"></script>
+[[end]]
