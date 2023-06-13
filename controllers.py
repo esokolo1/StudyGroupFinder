@@ -56,46 +56,33 @@ def testing():
   return dict(
   )
 
-@action('create_session', method=["GET", "POST"])
-@action.uses('create_session.html', db, session, auth.user, url_signer)
-def create_session():
-    form = Form(
-        [Field('Session_Name', requires = IS_NOT_EMPTY(error_message="Error: Enter Study Group Session Name")),
-         Field('School', requires = IS_NOT_EMPTY(error_message="Error: Enter School Name")),
-         Field('Term', requires = IS_IN_SET(['Spring 2023','Summer 2023', 'Fall 2023', 'Winter 2024'])), # requires = IS_NOT_EMPTY(error_message="Error: Enter Term (ex. Spring 2023)")), 
-         Field('Class_Name', requires = IS_NOT_EMPTY(error_message="Error: Enter Class Name (ex. CSE 183)")),
-         Field('Location', requires = IS_NOT_EMPTY(error_message="Error: Enter Location (ex. Kresge Clrm 327)")),
-         Field('Description', 'text', requires = IS_NOT_EMPTY(error_message="Error: Enter Description")),
-         Field('Date', 'date', requires=IS_DATE_IN_RANGE(format=('%Y-%m-%d'),minimum=datetime.date.today(), error_message='Error: Date cannot be in the past')), 
-         Field('Starttime', 'time', requires=IS_TIME()), 
-         Field('Endtime', 'time', requires=IS_TIME()), 
-         Field('Announcement', 'text'), 
-         Field('TA_or_Student_Led', label="TA/Tutor Attendance or Student Led", requires = IS_IN_SET(['TA/Tutor', 'Student Led'], zero=T('choose one'), error_message="Error: Choose One")),
-         Field('Maximum_Number_of_Students', requires=IS_INT_IN_RANGE(0, 1e6))],
-         formstyle=FormStyleBulma,
-         csrf_session=session
-    )
-    if form.accepted:
-        id = db.session.insert(
-            session_name=form.vars["Session_Name"],
-            school=form.vars["School"],
-            term=form.vars["Term"],
-            class_name=form.vars["Class_Name"],
-            location=form.vars["Location"],
-            description=form.vars["Description"],
-            date=form.vars["Date"],
-            starttime=form.vars["Starttime"],
-            endtime=form.vars["Endtime"],
-            official=form.vars["TA_or_Student_Led"],
-            max_num_students=form.vars["Maximum_Number_of_Students"]
-        )
-        db.attendance.insert(
-            email=get_user_email(),
-            session_id=id
-        )
-        redirect(URL('create_session_results'))
-    return dict(form=form)
+@action('create_new_session', method=['POST'])
+@action.uses(db, auth.user, url_signer.verify())
+def create_new_session():
+  db.session.insert(
+    course_id=request.json.get('course'),
+    session_name=request.json.get('name'),
+    session_description=request.json.get('desc'),
+    session_location=request.json.get('loc'),
+    session_days=request.json.get('days'),
+    session_time=request.json.get('time'),
+    session_length=request.json.get('len'),
+    session_start_date=request.json.get('start'),
+    session_end_date=request.json.get('end'),
+    session_capacity=request.json.get('cap'),
+    session_has_tas=request.json.get('ta'),
+  )
+  return URL('dashboard')
 
+@action('create_session')
+@action.uses('create_session.html', auth.user, url_signer)
+def create_session():
+  return dict(
+    get_enrolled_courses_url=URL('get_enrolled_courses',
+      signer=url_signer),
+    create_new_session_url=URL('create_new_session',
+      signer=url_signer),
+  )
 
 @action('create_session_results')
 @action.uses('create_session_results.html', db, session, auth.user, url_signer)
@@ -255,6 +242,7 @@ def get_session_list():
     )
 
 
+'''
 @action('find_session', method=["GET", "POST"])
 @action.uses('find_session.html', db, session, auth.user, url_signer)
 def find_session():
@@ -384,6 +372,81 @@ def enroll_session():
         email = get_user_email(),
         session_id = request.json.get('session_id')
     )
+'''
+def session_dict(session_row):
+  course = ''
+  school = ''
+  course_id = session_row.course_id
+  if course_id is not None:
+    course_row = db.course[course_id]
+    school_row = db.school[course_row.school_id]
+    course = course_string(course_row)
+    school = school_row.school_name
+  return dict(
+    id=session_row.id,
+    author=db.auth_user[session_row.user_id].email,
+    school=school,
+    course=course,
+    name=session_row.session_name,
+    desc=session_row.session_description,
+    loc=session_row.session_location,
+    days=session_row.session_days,
+    time=session_row.session_time,
+    len=session_row.session_length,
+    start=session_row.session_start_date,
+    end=session_row.session_end_date,
+    cap=session_row.session_capacity,
+    ta=session_row.session_has_tas,
+    open=session_row.session_is_open,
+  )
+@action('find_session',method=['GET'])
+@action.uses('find_session.html', auth.user, url_signer)
+def find_session():
+  return dict(
+    search_sessions_url = URL('search_sessions', signer=url_signer),
+    get_courses_url= URL('get_courses', signer=url_signer),
+    get_enrolled_schools_url=URL('get_enrolled_schools',
+      signer=url_signer),
+  )
+@action('search_sessions',method=['POST'])
+@action.uses(db, auth.user, url_signer.verify())
+def search_sessions():
+  session_results = []
+  search_query = request.json.get('search_query')
+  course_list = request.json.get('courses')
+  is_open = request.json.get('open')
+  has_tas = request.json.get('ta')
+  location_query = request.json.get('loc')
+  before_time = request.json.get('before')
+  after_time = request.json.get('after')
+  if before_time and len(before_time)==5: before_time += ':00'
+  if after_time and len(after_time)==5: after_time += ':00'
+  days = request.json.get('days')
+  db_query = True
+  for k in search_query.split():
+    db_query &= (
+      db.session.session_name.like('%'+k+'%') |
+      db.session.session_description.like('%'+k+'%')
+    )
+  if len(course_list) > 0:
+    course_filter = False
+    for course in course_list:
+      course_filter |= (db.session.course_id==course['id'])
+    db_query &= course_filter
+  if is_open: db_query &= (db.session.session_is_open==True)
+  if has_tas: db_query &= (db.session.session_has_tas==True)
+  db_query &= db.session.session_location.like('%'+location_query+'%')
+  if before_time: db_query &= (db.session.session_time<before_time)
+  if after_time: db_query &= (db.session.session_time>after_time)
+  if len(days) > 0:
+    days_filter = True
+    for day in days:
+      days_filter &= ((db.session.session_days%pow(2,day+1))/pow(2,day)==1)
+    db_query &= days_filter
+  session_rows = db(db_query).select(orderby=db.session.session_time)
+  for session_row in session_rows:
+    session_results.append(session_dict(session_row))
+  return dict(session_results=session_results)
 
 @action('info/<id:int>')
 @action.uses('info.html', db, auth.user, url_signer.verify())

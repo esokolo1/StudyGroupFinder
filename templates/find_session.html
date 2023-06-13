@@ -1,192 +1,243 @@
 [[extend 'sidebar_layout.html']]
 
-[[block page_head]]
-[[super]]
-<style>
-  select,
-  input {
-    width: 400px;
-    box-sizing: border-box;
-  }
-</style>
-[[end]]
-
 <div class="section" id="vue-target" v-cloak>
-  <div class="columns is-fullheight is-narrow-mobile">
-
-    <!--Find Study Group Session (Search Page)-->
-    <div
-      class="column find_session"
-      id="vue-target"
-      v-cloak
-      v-if="!show_search_results_page"
-    >
-      <h1 class="title has-text-weight-light is-mobile">
-        Find Group Study Sessions
-      </h1>
-      <div class="find_session_inputs">
-          <br>
-          <!--School-->
-          <div class="is-flex is-flex-direction-row is-align-items-center">
-            <label style="padding-left: 15%">School:</label>
-            <div class="dropdown_menu" style="padding-left: 8.5rem">
-              <input class="input" type='text'  size="43" v-model="query" placeholder="Type School Name"/>
-            </div>
-          </div> 
-          <br> 
-          <!--Term-->
-          <div class="is-flex is-flex-direction-row is-align-items-center">
-            <label style="padding-left: 15%">Term:</label>
-            <div class="dropdown_menu" style="padding-left: 9.3rem">
-              <input class="input" type='text'  size="43" placeholder="Type Term" v-model="term"/>
-            </div>
-          </div> 
-          <br>
-          <!--Status-->
-          <div class="is-flex is-flex-direction-row is-align-items-center">
-            <label  style="padding-left: 15%">Status: </label>
-            <div class="dropdown_menu" style="padding-left: 8.7rem">
-              <div class="select">
-                <select v-model="status"> 
-                  <option value="" disabled selected>Select Status</option>
-                  <option>Open</option>
-                  <option>Closed</option>
-                </select>
-              </div>
-            </div>
-          </div> 
-          <br>
-          <!--Class Name-->
-          <div class="is-flex is-flex-direction-row is-align-items-center">
-            <label style="padding-left: 15%">Class Name: </label>
-            <div class="dropdown_menu" style="padding-left: 6.3rem">
-              <input class="input" type='text'  size="43" placeholder="Type Class Name" v-model="class_name"/>
-            </div>
-          </div>
-          <br>
-          <!--Location-->
-          <div class="is-flex is-flex-direction-row is-align-items-center">
-            <label style="padding-left: 15%">Location: </label>
-            <div class="dropdown_menu" style="padding-left: 7.8rem">
-              <input class="input" type='text'  size="43" placeholder="Type Location" v-model="location"/>
-            </div>
-          </div>
-          <br>
-          <!--Meeting Days-->
-          <div class="is-flex is-flex-direction-row is-align-items-center">
-            <label style="padding-left: 15%">Meeting Dates: </label>
-            <div class="dropdown_menu" style="padding-left: 5.0rem;">
-              <div class="select">
-                <input v-model="meeting_date" type="date" style="padding: 10px;" name="datetime"><br>
-              </div>
-            </div>
-          </div>
-          <br>
-          <!--Meeting Start Times-->
-          <div class="is-flex is-flex-direction-row is-align-items-center">
-            <label style="padding-left: 15%">Meeting Start Times: </label>
-            <div class="dropdown_menu" style="padding-left: 2.5rem">
-                <input v-model="meeting_start" type="time" style="padding: 10px;" name="datetime"><br>
-            </div>
-          </div>
-          <br>
-          <!--Meeting End Times-->
-          <div class="is-flex is-flex-direction-row is-align-items-center">
-            <label style="padding-left: 15%">Meeting End Times: </label>
-            <div class="dropdown_menu" style="padding-left: 3rem">
-                <input v-model="meeting_end" type="time" style="padding: 10px;" name="datetime"><br>
-            </div>
-          </div>
-          <br>
-          <!--TA Tutor-->
-          <div class="is-flex is-flex-direction-row is-align-items-center">
-            <label style="padding-left: 15%">TA/Tutor Attendance: </label>
-            <div class="dropdown_menu" style="padding-left: 2.4rem">
-              <div class="select">
-                <select v-model="ta"> 
-                  <option value="" disabled selected>Select One</option>
-                  <option>TA/Tutor</option>
-                  <option>Student Led</option>
-                </select>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <br />
-      <br />
-      <!--Search Button-->
-      <div
-        class="Buttons is-flex is-justify-content-flex-end"
-        style="padding-right: 15%"
-      >
-        <a
-          class="button is-rounded is-link is-outlined is-size-6"
-          @click="search"
-          >Search</a
-        >
-      </div>
-    </div>
-
-    <!--Search Results Page-->
-    <div class="column search_results" v-if="show_search_results_page">
-      <h1 class="title has-text-weight-light is-mobile">Search Results</h1>
-        <div class="block">
-          <table class="table is-fullwidth">
-              <thead>
-                  <tr>
-                      <th><div class="has-text-weight-bold">Session Name</div></th>
-                      <th><div class="has-text-weight-bold">School</div></th>
-                      <th><div class="has-text-weight-bold">Term</div></th>
-                      <th><div class="has-text-weight-bold">Class Name</div></th>
-                      <th><div class="has-text-weight-bold">Location</div></th>
-                      <th><div class="has-text-weight-bold">Date</div></th>
-                      <th><div class="has-text-weight-bold">Start Time</div></th>
-                      <th><div class="has-text-weight-bold">End Time</div></th>
-                      <th><div class="has-text-weight-bold">Description</div></th>
-                      <th><div class="has-text-weight-bold">TA/Student Led</div></th>
-                      <th><div class="has-text-weight-bold">Status</div></th>
-                  </tr>
-              </thead>
-      
-              <tbody v-for="r in results">
-                  <tr>
-                    <td>{{r.session_name}}</td>
-                    <td>{{r.school}}</td>
-                    <td>{{r.term}}</td>
-                    <td>{{r.class_name}}</td>
-                    <td>{{r.location}}</td>
-                    <td>{{r.date}}</td>
-                    <td>{{r.starttime}}</td>
-                    <td>{{r.endtime}}</td>
-                    <td>{{r.description}}</td>
-                    <td>{{r.official}}</td>
-                    <td>
-                      <a v-if="r.success_enroll" class="button is-success is-outlined is-light" @click="enroll_session(r.id)">
-                          Enroll
-                      </a>
-                      <div v-else="!r.success_enroll">
-                        Full/Closed
-                      </div>
-                    </td>
-                  </tr>
-                  [[pass]]
-              </tbody>
-          </table>
-        </div>
-    </div>
-
+  <div class="block">
+    <h3 class="title has-text-weight-light">
+      Find Study Sessions
+    </h3>
   </div>
+
+  <!--search-->
+  <div class="block box">
+    <div class="block field has-addons">
+      <p class="control">
+        <span class="select">
+          <select v-model="selected_school">
+            <option v-for="school in enrolled_schools"
+              v-bind:value="school.id">
+              {{school.name}}
+            </option>
+          </select>
+        </span>
+      </p>
+      <p class="control has-icons-left">
+        <input class="input"
+          placeholder="keyword search"
+          v-model="search_query" >
+        <span class="icon is-left">
+          <i class="fa fa-search"></i>
+        </span>
+      </p>
+      <p class="control">
+        <button class="button is-primary"
+          @click="search_sessions" >
+          Search
+        </button>
+      </p>
+    </div>
+    <div class="field">
+      <button class="button"
+        @click="toggle_filter">
+        <span class="icon">
+          <i class="fa fa-filter"></i>
+        </span>
+        <span>filters</span>
+      </button>
+    </div>
+    <fieldset class="block columns" v-if="filters_on">
+      <div class="column">
+        <form-row label="class:">
+          <item-search
+            item_name="course"
+            v-bind:min_times="0"
+            search_url="[[=XML(get_courses_url)]]"
+            v-bind:selected_items="selected_courses"
+          >
+          </item-search>
+        </form-row>
+        <form-row label="status:">
+          <div class="field">
+            <p class="control">
+              <label class="checkbox">
+                <input type="checkbox" v-model="open_only">
+                Only open sessions
+              </label>
+            </p>
+          </div>
+        </form-row>
+        <form-row label="TAs:">
+          <div class="field">
+            <p class="control">
+              <label class="checkbox">
+                <input type="checkbox" v-model="ta_only">
+                Only TA-led sessions
+              </label>
+            </p>
+          </div>
+        </form-row>
+        <form-row label="location:">
+          <div class="field">
+            <p class="control">
+              <input class="input" v-model="location_query">
+            </p>
+          </div>
+        </form-row>
+      </div>
+      <div class="column">
+        <form-row label="start after:">
+          <div class="field has-addons">
+            <p class="control">
+              <input class="input" type="time"
+                v-model="start_after" >
+            </p>
+            <p class="control">
+              <button class="button"
+                @click="clear_start_after" >
+                <span class="icon">
+                  <i class="fa fa-times"></i>
+                </span>
+              </button>
+            </p>
+          </div>
+        </form-row>
+        <form-row label="start before:">
+          <div class="field has-addons">
+            <p class="control">
+              <input class="input" type="time"
+                v-model="start_before" >
+            </p>
+            <p class="control">
+              <button class="button"
+                @click="clear_start_before" >
+                <span class="icon">
+                  <i class="fa fa-times"></i>
+                </span>
+              </button>
+            </p>
+          </div>
+        </form-row>
+        <form-row label="meeting days:">
+          <div class="field">
+            <p class="control">
+              <span class="select is-multiple">
+                <select multiple size="7" v-model="selected_days">
+                  <option v-for="day in week_days"
+                    v-bind:value="week_days.indexOf(day)">
+                    {{day}}
+                  </option>
+                </select>
+              </span>
+            </p>
+          </div>
+        </form-row>
+      </div>
+    </fieldset>
+  </div>
+
+  <!--results-->
+  <div class="block">
+    <div v-if="session_results.length < 1"
+      class="has-text-grey-lighter" >
+      no results
+    </div>
+    <table class="table is-hoverable has-text-weight-light" v-else>
+      <thead>
+        <tr>
+          <td>session</td>
+          <td>tags</td>
+          <td>location</td>
+          <td>time/length</td>
+          <td>days</td>
+          <td>dates</td>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="session in session_results" >
+          <td>
+            <a v-bind:href="[[=URL()]]+'session/'+session.id">
+              {{session.name}}
+            </a>
+            <span class="tag" v-if="session.open">open</span>
+            <span class="tag" v-else>closed</span>
+          </td>
+          <td>
+            <p class="tags">
+              <span class="tag">
+                {{session.course ? session.course : 'general'}}
+              </span>
+              <span class="tag">
+                {{session.ta ? 'TA-led' : 'Student-led'}}
+              </span>
+            </p>
+          </td>
+          <td>
+            <span class="tag">
+              <input
+                class="tag input is-static has-text-weight-light"
+                readonly
+                style="min-width:6rem;"
+                v-bind:value="session.loc" >
+            </span>
+          </td>
+          <td>
+            <span class="tag">
+              <input type="time"
+                class="tag input is-static has-text-weight-light"
+                readonly
+                v-bind:value="session.time.slice(0,5)" >
+            </span>
+            <span class="tag">
+              <span v-if="session.len>59">
+                {{Math.floor(session.len/60)}}h
+              </span>
+              <span v-if="session.len%60">
+                {{session.len%60}}m
+              </span>
+            </span>
+          </td>
+          <td>
+            <p class="tags">
+              <span class="tag"
+                v-for="day in convert_days(session.days)" >
+                {{day}}
+              </span>
+            </p>
+          </td>
+          <td>
+            <span class="tag" v-if="session.start==session.end">
+              <input type="date"
+                class="tag input is-static has-text-weight-light"
+                readonly
+                v-bind:value="session.start" >
+            </span>
+            <span class="tag" v-else>
+              <input type="date"
+                class="tag input is-static has-text-weight-light"
+                readonly
+                v-bind:value="session.start" >
+              <span class="tag">-</span>
+              <input type="date"
+                class="tag input is-static has-text-weight-light"
+                readonly
+                v-if="session.end"
+                v-bind:value="session.end" >
+              <span v-else>ongoing</span>
+            </span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
 </div>
 
 [[block page_scripts]]
 [[super]]
 <script>
-  let get_session_list_url = "[[=XML(get_session_list_url)]]";
-  let search_url = "[[=XML(search_url)]]";
-  let enroll_session_url = "[[=XML(enroll_session_url)]]"
+  let search_sessions_url = "[[=XML(search_sessions_url)]]";
+  let get_enrolled_schools_url = "[[=XML(get_enrolled_schools_url)]]";
 </script>
-<!-- index.js or create another js file-->
-<script src="js/index.js"></script>
-<!-- <script src="js/find_session.js"></script> -->
+<script src="js/form_row.js"></script>
+<script src="js/item_search.js"></script>
+<script src="js/find_session.js"></script>
 [[end]]
