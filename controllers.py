@@ -242,6 +242,7 @@ def get_session_list():
     )
 
 
+'''
 @action('find_session', method=["GET", "POST"])
 @action.uses('find_session.html', db, session, auth.user, url_signer)
 def find_session():
@@ -371,6 +372,81 @@ def enroll_session():
         email = get_user_email(),
         session_id = request.json.get('session_id')
     )
+'''
+def session_dict(session_row):
+  course = ''
+  school = ''
+  course_id = session_row.course_id
+  if course_id is not None:
+    course_row = db.course[course_id]
+    school_row = db.school[course_row.school_id]
+    course = course_string(course_row)
+    school = school_row.school_name
+  return dict(
+    id=session_row.id,
+    author=db.auth_user[session_row.user_id].email,
+    school=school,
+    course=course,
+    name=session_row.session_name,
+    desc=session_row.session_description,
+    loc=session_row.session_location,
+    days=session_row.session_days,
+    time=session_row.session_time,
+    len=session_row.session_length,
+    start=session_row.session_start_date,
+    end=session_row.session_end_date,
+    cap=session_row.session_capacity,
+    ta=session_row.session_has_tas,
+    open=session_row.session_is_open,
+  )
+@action('find_session',method=['GET'])
+@action.uses('find_session.html', auth.user, url_signer)
+def find_session():
+  return dict(
+    search_sessions_url = URL('search_sessions', signer=url_signer),
+    get_courses_url= URL('get_courses', signer=url_signer),
+    get_enrolled_schools_url=URL('get_enrolled_schools',
+      signer=url_signer),
+  )
+@action('search_sessions',method=['POST'])
+@action.uses(db, auth.user, url_signer.verify())
+def search_sessions():
+  session_results = []
+  search_query = request.json.get('search_query')
+  course_list = request.json.get('courses')
+  is_open = request.json.get('open')
+  has_tas = request.json.get('ta')
+  location_query = request.json.get('loc')
+  before_time = request.json.get('before')
+  after_time = request.json.get('after')
+  if before_time and len(before_time)==5: before_time += ':00'
+  if after_time and len(after_time)==5: after_time += ':00'
+  days = request.json.get('days')
+  db_query = True
+  for k in search_query.split():
+    db_query &= (
+      db.session.session_name.like('%'+k+'%') |
+      db.session.session_description.like('%'+k+'%')
+    )
+  if len(course_list) > 0:
+    course_filter = False
+    for course in course_list:
+      course_filter |= (db.session.course_id==course['id'])
+    db_query &= course_filter
+  if is_open: db_query &= (db.session.session_is_open==True)
+  if has_tas: db_query &= (db.session.session_has_tas==True)
+  db_query &= db.session.session_location.like('%'+location_query+'%')
+  if before_time: db_query &= (db.session.session_time<before_time)
+  if after_time: db_query &= (db.session.session_time>after_time)
+  if len(days) > 0:
+    days_filter = True
+    for day in days:
+      days_filter &= ((db.session.session_days%pow(2,day+1))/pow(2,day)==1)
+    db_query &= days_filter
+  session_rows = db(db_query).select(orderby=db.session.session_time)
+  for session_row in session_rows:
+    session_results.append(session_dict(session_row))
+  return dict(session_results=session_results)
 
 @action('info/<id:int>')
 @action.uses('info.html', db, auth.user, url_signer.verify())
