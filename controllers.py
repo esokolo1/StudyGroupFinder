@@ -567,8 +567,10 @@ def events_url():
         clickedDate = datetime.datetime(int(request.params.get("year")), int(request.params.get("month")), int(request.params.get("date")))
         clickedDate = clickedDate.date()
         week_days = ['Sunday', 'Monday','Tuesday','Wednesday','Thursday','Friday','Saturday']
+        if (each["session_start_date"] == clickedDate and each["session_end_date"] == clickedDate):
+          events_list.append(each)
         # if session_start_date <= what user clicked on Calendar
-        if (each["session_start_date"] <= clickedDate):
+        elif (each["session_start_date"] <= clickedDate):
           # if session_end_date is None OR session_end_date >= what user clicked on Calendar
           if (each["session_end_date"] == None or each["session_end_date"] >= clickedDate):
             # convert db.session.session_days to string (4 -> Monday, 12 -> Tuesday, Wednesday)
@@ -583,4 +585,5 @@ def events_url():
               if (clickedDate.strftime('%A') == abc):
                 # add to events_list
                 events_list.append(each)
+
     return dict(events_list = events_list)
