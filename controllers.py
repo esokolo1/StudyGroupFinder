@@ -484,9 +484,9 @@ def events_url():
     events_list = []
     # all_sessions - db.session
     all_sessions = db(db.session).select().as_list()
+    print(all_sessions)
     for each in all_sessions:
-        # convert db.session date (string) to datetime object
-        convertedDate = datetime.datetime.strptime(each["date"], '%Y-%m-%d').date()
+        convertedDate = each["session_start_date"]
         # check if each study session month, date, year match what user clicks on a calendar
         if (convertedDate.month == int(request.params.get("month"))):
             if (convertedDate.day == int(request.params.get("date"))):

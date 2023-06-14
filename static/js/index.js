@@ -148,7 +148,7 @@ let init = (app) => {
             .then(function(response) {
                 app.vue.upcoming_sessions= response.data.events_list;
                 // sort by starttime
-                app.vue.upcoming_sessions.sort((a, b) => (a.starttime > b.starttime) ? 1 : -1)
+                app.vue.upcoming_sessions.sort((a, b) => (a.session_time > b.session_time) ? 1 : -1)
             });
     }
 
