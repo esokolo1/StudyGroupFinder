@@ -54,6 +54,8 @@ db.define_table(
     Field('is_active','boolean',default=True),
 )
 
+
+
 db.define_table(
     'session',
     Field('user_id','reference auth_user',default=get_user_id),
@@ -71,6 +73,14 @@ db.define_table(
     Field('session_has_tas','boolean',default=False),
     Field('session_is_open','boolean',default=True),
 )
+
+db.define_table(
+    'session_enrollment',
+    Field('user_id','reference auth_user',default=get_user_id),
+    Field('session_id','reference session',notnull=True),
+    Field('is_enrolled','boolean',default=True),
+)
+
 db.define_table(
     'attendance',
     Field('user_id','reference auth_user',default=get_user_id),
@@ -144,6 +154,8 @@ def testing_insert():
         course_number=i,
         course_title='course'+str(i),
       )
+
+
 
     db.commit()
 

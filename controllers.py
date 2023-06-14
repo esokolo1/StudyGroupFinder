@@ -59,7 +59,7 @@ def testing():
 @action('create_new_session', method=['POST'])
 @action.uses(db, auth.user, url_signer.verify())
 def create_new_session():
-  db.session.insert(
+  session_id=db.session.insert(
     course_id=request.json.get('course'),
     session_name=request.json.get('name'),
     session_description=request.json.get('desc'),
@@ -72,7 +72,19 @@ def create_new_session():
     session_capacity=request.json.get('cap'),
     session_has_tas=request.json.get('ta'),
   )
+  db.session_enrollment.insert(
+      user_id=auth.user_id,
+      session_id=session_id,
+      is_enrolled=True,
+  )
+
+
   return URL('dashboard')
+
+
+
+
+
 
 @action('create_session')
 @action.uses('create_session.html', auth.user, url_signer)
@@ -482,6 +494,7 @@ def course_string(course_row):
     course_row.course_number + ' ' +
     (course_row.course_title or '')
   )
+
 ###
 @action('get_schools', method=['GET'])
 @action.uses(db, url_signer.verify())
@@ -528,6 +541,31 @@ def get_enrolled_courses():
     for c in db(db.course_enrollment.user_id==get_user_id()).select()
   ]
   return dict(r=enrolled_courses)
+
+
+@action('get_enrolled_sessions', method=['GET'])
+@action.uses(db, auth, auth.user, url_signer.verify())
+def get_enrolled_sessions():
+    query = db(db.session_enrollment.user_id == get_user_id()).select()
+    print(str(query))  # Print the query
+    enrolled_sessions = [
+        dict(id=es.session_id, name=db.session[es.session_id].session_name)
+        for es in query
+    ]
+    return dict(r=enrolled_sessions)
+
+
+# MY_SESSIONS controllers
+@action('my_sessions')
+@action.uses('my_sessions.html', auth.user, url_signer)
+def my_sessions():
+  return dict(
+    get_enrolled_sessions_url=URL('get_enrolled_sessions',
+      signer=url_signer),
+  )
+
+
+
 @action('get_profile', method=['GET'])
 @action.uses(db, auth, auth.user, url_signer.verify())
 def get_profile():

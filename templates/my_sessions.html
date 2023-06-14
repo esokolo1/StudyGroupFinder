@@ -1,0 +1,28 @@
+[[extend 'sidebar_layout.html']]
+
+<div class="section" id="vue-target" v-cloak>
+    <h3 class="title has-text-weight-light">
+        My Sessions
+    </h3>
+
+
+    <div class="field has-addons" v-for="session in enrolled_sessions">
+        <p class="control">
+          <button class="button">
+            <span>load</span>
+          </button>
+        </p>
+    </div>
+
+</div>
+
+[[block page_scripts]]
+
+<script>
+  let get_enrolled_sessions_url = "[[=XML(get_enrolled_sessions_url)]]";
+</script>
+
+<script src="js/my_sessions.js"></script>
+
+[[super]]
+[[end]]
