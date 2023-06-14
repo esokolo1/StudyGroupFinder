@@ -286,10 +286,10 @@ def find_session():
         session.is_enrolled = bool(enrollment)
 
         # Print the value of is_enrolled for each session
-        print(f"Session {session.id} - is_enrolled: {session.is_enrolled}")
+        # print(f"Session {session.id} - is_enrolled: {session.is_enrolled}")
 
     # Print the content of sessions
-    print(sessions)
+    # print(sessions)
 
 
     return dict(
