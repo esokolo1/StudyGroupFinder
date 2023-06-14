@@ -50,28 +50,20 @@
             <!-- info -->
             <div class="block">
               <div class="block">
-                <div class="has-text-weight-bold">School</div>
-                <div>[[=session["school"]]]</div>
-              </div>
-              <div class="block">
-                <div class="has-text-weight-bold">Term</div>
-                <div>[[=session["term"]]]</div>
-              </div>
-              <div class="block">
-                <div class="has-text-weight-bold">Class</div>
-                <div>[[=session["class_name"]]]</div>
-              </div>
-              <div class="block">
                 <div class="has-text-weight-bold">Location</div>
-                <div>[[=session["location"]]]</div>
+                <div>[[=session["session_location"]]]</div>
               </div>
               <div class="block">
                 <div class="has-text-weight-bold">Time</div>
-                <div>[[=session["starttime"]]] - [[=session["endtime"]]]</div>
+                <div>[[=session["session_time"]]]</div>
+              </div>
+              <div class="block">
+                <div class="has-text-weight-bold">Length</div>
+                <div>[[=session["session_length"]]] minutes</div>
               </div>
               <div class="block">
                 <div class="has-text-weight-bold">Description</div>
-                <div>[[=session["description"]]]</div>
+                <div>[[=session["session_description"]]]</div>
               </div>
             </div>
 
@@ -104,7 +96,7 @@
                 <div v-for="comment in comments">
                   <div class="box">
                     <div class="has-text-weight-bold">{{comment["first_name"]}} {{comment["last_name"]}}</div>
-                    <div>{{comment["content"]}}</div>
+                    <div>{{comment["comment_content"]}}</div>
                     <div>{{comment["time"]}}</div>
                   </div>
                 </div>

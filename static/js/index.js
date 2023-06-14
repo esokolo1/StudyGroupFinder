@@ -242,7 +242,7 @@ let init = (app) => {
             .then(function(result) {
                 comments_list = result.data.comments;
                 for (let i = 0; i < comments_list.length; i++) {
-                    let timestamp = comments_list[i]["timestamp"];
+                    let timestamp = comments_list[i]["comment_timestamp"];
                     comments_list[i]["time"] = Sugar.Date(timestamp + "Z").relative();
                 }
                 app.vue.comments = comments_list;

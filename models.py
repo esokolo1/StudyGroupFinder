@@ -16,6 +16,12 @@ def get_user_id():
 def get_time():
     return datetime.datetime.utcnow()
 
+def get_first_name():
+    return auth.current_user.get('first_name') if auth.current_user else None
+
+def get_last_name():
+    return auth.current_user.get('last_name') if auth.current_user else None
+
 
 db.define_table(
     'school',
@@ -107,11 +113,14 @@ db.define_table(
 )
 db.define_table(
     'comment',
+    Field('session_id','reference session'),
     Field('user_id','reference auth_user',default=get_user_id),
-    Field('post_id','reference post',notnull=True),
+    Field('post_id','reference post'),
     Field('comment_content','text',notnull=True,requires=IS_NOT_EMPTY()),
-    Field('comment_timestamp','datetime',default=get_time),
+    Field('comment_timestamp'),
     Field('parent_comment_id','reference comment'),
+    Field('first_name', default=get_first_name),
+    Field('last_name', default=get_last_name),
 )
 
 db.commit()

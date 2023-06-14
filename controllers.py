@@ -320,14 +320,13 @@ def search_sessions():
   return dict(session_results=session_results)
 
 @action('info/<id:int>')
-@action.uses('info.html', db, auth.user, url_signer.verify())
+@action.uses('info.html', db, auth.user)
 def info(id):
     session = db(db.session.id == id).select().as_list()[0]
-    comments = db(db.comment.session_id == id).select().as_list()
     get_session_list_url = URL('get_session_list', signer=url_signer)
     get_comments_url = URL('get_comments', signer=url_signer)
     add_comment_url = URL('add_comment', signer=url_signer)
-    return dict(session=session, comments=comments, get_session_list_url=get_session_list_url, get_comments_url=get_comments_url, add_comment_url=add_comment_url)
+    return dict(session=session, get_session_list_url=get_session_list_url, get_comments_url=get_comments_url, add_comment_url=add_comment_url)
 
 @action('get_comments')
 @action.uses(db, auth.user, url_signer.verify())
@@ -342,7 +341,7 @@ def get_comments():
 def add_reply():
     id = request.json.get("id")
     comment = request.json.get("new_comment")
-    db.comment.insert(session_id=id, content=comment, timestamp=get_time().isoformat())
+    db.comment.insert(session_id=id, comment_content=comment, comment_timestamp=get_time().isoformat())
     return "ok"
 
 def course_string(course_row):
@@ -415,7 +414,7 @@ def get_enrolled_sessions():
              days= db.session[es.session_id].session_days,
              start= db.session[es.session_id].session_start_date,
              end= db.session[es.session_id].session_end_date,
-
+             info=URL('info', es.session_id, signer=url_signer)
              )
         for es in query
 
