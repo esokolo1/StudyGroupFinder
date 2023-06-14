@@ -23,10 +23,10 @@ let week_days = [
   // Make an API request to fetch the sessions data.
   app.getSessions = () => {
     axios.get(get_enrolled_sessions_url).then((result) => {
-        console.log("Lets check the data: " + result.data);
-        console.log("Lets stringify it" + JSON.stringify(result.data.r));
-
-        console.log("Lets check result: " + result.data.enrolled_sessions);
+//        console.log("Lets check the data: " + result.data);
+//        console.log("Lets stringify it" + JSON.stringify(result.data.r));
+//
+//        console.log("Lets check result: " + result.data.enrolled_sessions);
         app.vue.enrolled_sessions = app.enumerate(result.data.r); // Set the sessions data in Vue
       })
       .catch((error) => {

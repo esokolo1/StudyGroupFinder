@@ -29,12 +29,16 @@
                 </button>
               </p>
 
+
           </td>
 
         <td>
-            <span class="tag">
-              <a :href=sessionT.info>{{ sessionT.name }}</a>
-            </span>
+              <a v-bind:href="[[=URL()]]+'info/'+sessionT.id">
+              {{sessionT.name}}
+            </a>
+                <span class="tag" v-if="sessionT.open">open</span>
+                <span class="tag" v-else>closed</span>
+
 
         </td>
         <td>

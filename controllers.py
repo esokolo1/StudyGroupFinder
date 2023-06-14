@@ -265,20 +265,44 @@ def session_dict(session_row):
     open=session_row.session_is_open,
   )
 #
-# TODO: IMPLEMENT THE TOGGLE ENROLL AND TOGGLE UNENROLL FUNCTIONS
-
 # find_session page - user can search sessions by class, school name etc
 
 @action('find_session',method=['GET'])
 @action.uses('find_session.html', auth.user, url_signer)
 def find_session():
-  return dict(
-    search_sessions_url = URL('search_sessions', signer=url_signer),
-    get_courses_url= URL('get_courses', signer=url_signer),
-    get_enrolled_schools_url=URL('get_enrolled_schools',
-      signer=url_signer),
+    # Get the user ID
+    user_id = auth.current_user.get('id')
+    # Retrieve the list of sessions from the database
+    sessions = db().select(db.session.ALL)
 
-  )
+    # Check if the user is enrolled in each session
+    for session in sessions:
+        enrollment = db(
+            (db.session_enrollment.user_id == user_id) &
+            (db.session_enrollment.session_id == session.id)
+        ).select().first()
+
+        # Set the enrollment status for the session
+        session.is_enrolled = bool(enrollment)
+
+        # Print the value of is_enrolled for each session
+        print(f"Session {session.id} - is_enrolled: {session.is_enrolled}")
+
+    # Print the content of sessions
+    print(sessions)
+
+
+    return dict(
+        sessions=sessions,
+        remove_session_url=URL('remove_session', signer=url_signer),
+        enroll_session_url=URL('enroll_session', signer=url_signer),
+        search_sessions_url = URL('search_sessions', signer=url_signer),
+        get_courses_url= URL('get_courses', signer=url_signer),
+        get_enrolled_schools_url=URL('get_enrolled_schools',
+        signer=url_signer),
+        get_enrolled_sessions_url=URL('get_enrolled_sessions',
+                                      signer=url_signer),
+    )
 @action('search_sessions',method=['POST'])
 @action.uses(db, auth.user, url_signer.verify())
 def search_sessions():
@@ -315,8 +339,9 @@ def search_sessions():
       days_filter &= ((db.session.session_days%pow(2,day+1))/pow(2,day)==1)
     db_query &= days_filter
   session_rows = db(db_query).select(orderby=db.session.session_time)
+  # Get the user ID
   for session_row in session_rows:
-    session_results.append(session_dict(session_row))
+      session_results.append(session_dict(session_row))
   return dict(session_results=session_results)
 
 @action('info/<id:int>')
@@ -414,7 +439,8 @@ def get_enrolled_sessions():
              days= db.session[es.session_id].session_days,
              start= db.session[es.session_id].session_start_date,
              end= db.session[es.session_id].session_end_date,
-             info=URL('info', es.session_id, signer=url_signer)
+             info=URL('info', es.session_id, signer=url_signer),
+             open = db.session[es.session_id].session_is_open,
              )
         for es in query
 
@@ -437,7 +463,7 @@ def my_sessions():
 def remove_session():
     session_id = int(request.json.get('session_id'))
     user_id = int(auth.current_user.get('id'))
-    print(str(session_id))
+    # print(str(session_id))
     # Check if the current user is the session creator
     session = db.session(session_id)
     if session and session.user_id == user_id:
@@ -449,12 +475,32 @@ def remove_session():
         db((db.session_enrollment.session_id == session_id) & (db.session_enrollment.user_id == user_id)).delete()
 
 
-
-
     user_id = int(auth.current_user.get('id'))
 
     db((db.session_enrollment.session_id == session_id) & (db.session_enrollment.user_id == user_id)).delete()
     return "Session removed successfully"
+
+@action('enroll_session', method=['POST'])
+@action.uses(db, auth, auth.user, url_signer.verify())
+def enroll_session():
+    session_id = int(request.json.get('session_id'))
+    user_id = int(auth.current_user.get('id'))
+
+    # Check if the session exists
+    session = db.session(session_id)
+    if session:
+        # Check if the user is already enrolled in the session
+        enrollment = db(
+            (db.session_enrollment.session_id == session_id) &
+            (db.session_enrollment.user_id == user_id)
+        ).select().first()
+
+        if not enrollment:
+            # User is not already enrolled, create a new enrollment record
+            db.session_enrollment.insert(session_id=session_id, user_id=user_id)
+            return "Session enrolled successfully"  # Return a response indicating successful enrollment
+
+    return "User already in sesssion"
 
 
 
