@@ -143,6 +143,7 @@
     <table class="table is-hoverable has-text-weight-light" v-else>
       <thead>
         <tr>
+          <td></td>
           <td>session</td>
           <td>tags</td>
           <td>location</td>
@@ -153,6 +154,11 @@
       </thead>
       <tbody>
         <tr v-for="session in session_results" >
+          <td>
+
+
+
+          </td>
           <td>
             <a v-bind:href="[[=URL()]]+'session/'+session.id">
               {{session.name}}
@@ -236,6 +242,7 @@
 <script>
   let search_sessions_url = "[[=XML(search_sessions_url)]]";
   let get_enrolled_schools_url = "[[=XML(get_enrolled_schools_url)]]";
+
 </script>
 <script src="js/form_row.js"></script>
 <script src="js/item_search.js"></script>

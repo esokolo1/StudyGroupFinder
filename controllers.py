@@ -411,6 +411,9 @@ def session_dict(session_row):
     ta=session_row.session_has_tas,
     open=session_row.session_is_open,
   )
+#
+# TODO: IMPLEMENT THE TOGGLE ENROLL AND TOGGLE UNENROLL FUNCTIONS
+
 @action('find_session',method=['GET'])
 @action.uses('find_session.html', auth.user, url_signer)
 def find_session():
@@ -419,6 +422,7 @@ def find_session():
     get_courses_url= URL('get_courses', signer=url_signer),
     get_enrolled_schools_url=URL('get_enrolled_schools',
       signer=url_signer),
+
   )
 @action('search_sessions',method=['POST'])
 @action.uses(db, auth.user, url_signer.verify())
@@ -549,8 +553,19 @@ def get_enrolled_sessions():
     query = db(db.session_enrollment.user_id == get_user_id()).select()
     print(str(query))  # Print the query
     enrolled_sessions = [
-        dict(id=es.session_id, name=db.session[es.session_id].session_name)
+        dict(id=es.session_id,
+             name=db.session[es.session_id].session_name,
+             location=db.session[es.session_id].session_location,
+             ta=db.session[es.session_id].session_has_tas,
+             time=db.session[es.session_id].session_time,
+             len=db.session[es.session_id].session_length,
+             days= db.session[es.session_id].session_days,
+             start= db.session[es.session_id].session_start_date,
+             end= db.session[es.session_id].session_end_date,
+
+             )
         for es in query
+
     ]
     return dict(r=enrolled_sessions)
 
@@ -562,7 +577,33 @@ def my_sessions():
   return dict(
     get_enrolled_sessions_url=URL('get_enrolled_sessions',
       signer=url_signer),
+      remove_session_url=URL('remove_session', signer=url_signer),
   )
+
+@action('remove_session', method=['POST'])
+@action.uses(db, auth, auth.user, url_signer.verify())
+def remove_session():
+    session_id = int(request.json.get('session_id'))
+    user_id = int(auth.current_user.get('id'))
+    print(str(session_id))
+    # Check if the current user is the session creator
+    session = db.session(session_id)
+    if session and session.user_id == user_id:
+        # User is the session creator, delete the entire session
+        db(db.session.id == session_id).delete()
+        db(db.session_enrollment.session_id == session_id).delete()
+    else:
+        # User is not the session creator, un-enroll the student from the session
+        db((db.session_enrollment.session_id == session_id) & (db.session_enrollment.user_id == user_id)).delete()
+
+
+
+
+    user_id = int(auth.current_user.get('id'))
+
+    db((db.session_enrollment.session_id == session_id) & (db.session_enrollment.user_id == user_id)).delete()
+    return "Session removed successfully"
+
 
 
 
