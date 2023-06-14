@@ -5,10 +5,15 @@
         My Sessions
     </h3>
 
+
 <!--    results-->
 
     <div class="block">
-        <table class="table is-hoverable has-text-weight-light">
+        <div v-if="enrolled_sessions.length < 1"
+          class="has-text-grey-lighter" >
+          Not enrolled in any sessions
+        </div>
+        <table v-else class="table is-hoverable has-text-weight-light">
       <thead>
         <tr>
           <td></td>
