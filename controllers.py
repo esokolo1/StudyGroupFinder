@@ -32,6 +32,7 @@ from yatl.helpers import A
 from .common import db, session, T, cache, auth, logger, authenticated, unauthenticated, flash
 from py4web.utils.url_signer import URLSigner
 from .models import get_user_email, get_user_id, get_time
+import math
 
 import datetime
 import calendar
@@ -486,10 +487,24 @@ def events_url():
     all_sessions = db(db.session).select().as_list()
     for each in all_sessions:
         convertedDate = each["session_start_date"]
-        # check if each study session month, date, year match what user clicks on a calendar
-        if (convertedDate.month == int(request.params.get("month"))):
-            if (convertedDate.day == int(request.params.get("date"))):
-                if (convertedDate.year == int(request.params.get("year"))):
-                    # add db.session row to events_list
-                    events_list.append(each)
+        # what user clicked on calendar
+        clickedDate = datetime.datetime(int(request.params.get("year")), int(request.params.get("month")), int(request.params.get("date")))
+        clickedDate = clickedDate.date()
+        week_days = ['Sunday', 'Monday','Tuesday','Wednesday','Thursday','Friday','Saturday']
+        # if session_start_date <= what user clicked on Calendar
+        if (each["session_start_date"] <= clickedDate):
+          # if session_end_date is None OR session_end_date >= what user clicked on Calendar
+          if (each["session_end_date"] == None or each["session_end_date"] >= clickedDate):
+            # convert db.session.session_days to string (4 -> Monday, 12 -> Tuesday, Wednesday)
+            days_list = []
+            n = int(each["session_days"])
+            for i in range(0, 7):
+              if (n % 2):
+                days_list.append(week_days[i])
+              n = math.floor(n / 2)
+            # check days that user clicked on calendar match each session_days
+            for abc in days_list:
+              if (clickedDate.strftime('%A') == abc):
+                # add to events_list
+                events_list.append(each)
     return dict(events_list = events_list)
