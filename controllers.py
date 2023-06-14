@@ -484,7 +484,6 @@ def events_url():
     events_list = []
     # all_sessions - db.session
     all_sessions = db(db.session).select().as_list()
-    print(all_sessions)
     for each in all_sessions:
         convertedDate = each["session_start_date"]
         # check if each study session month, date, year match what user clicks on a calendar
