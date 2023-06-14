@@ -23,6 +23,8 @@ let init = (app) => {
   };
 
   app.methods = {
+
+
     toggle_filter:function() {
       this.filters_on=!this.filters_on;
     },
