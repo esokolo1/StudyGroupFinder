@@ -74,7 +74,7 @@ def create_new_session():
   )
 
 
-  return URL('dashboard')
+  return URL('my_sessions')
 
 # create_session page (where user can create new study group session)
 
