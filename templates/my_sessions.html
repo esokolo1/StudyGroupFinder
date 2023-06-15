@@ -1,19 +1,14 @@
 [[extend 'sidebar_layout.html']]
 
 <div class="section" id="vue-target" v-cloak>
-    <h3 class="title has-text-weight-light">
-        My Sessions
-    </h3>
+  <h3 class="title has-text-weight-light">My Sessions</h3>
 
-
-<!--    results-->
-
-    <div class="block">
-        <div v-if="enrolled_sessions.length < 1"
-          class="has-text-grey-lighter" >
-          Not enrolled in any sessions
-        </div>
-        <table v-else class="table is-hoverable has-text-weight-light">
+  <!--    results-->
+  <div class="block">
+    <div v-if="enrolled_sessions.length < 1" class="has-text-grey-lighter">
+      Not enrolled in any sessions
+    </div>
+    <table v-else class="table is-hoverable has-text-weight-light">
       <thead>
         <tr>
           <td></td>
@@ -26,27 +21,26 @@
         </tr>
       </thead>
       <tbody>
-      <tr v-for="sessionT in enrolled_sessions">
+        <tr v-for="sessionT in enrolled_sessions">
           <td>
-              <p class="control">
-                <button class="button is-danger" @click="removeSession(sessionT.id)">
-                  <span>Un-Enroll</span>
-                </button>
-              </p>
-
-
+            <p class="control">
+              <button
+                class="button is-danger"
+                @click="removeSession(sessionT.id)"
+              >
+                <span>Un-Enroll</span>
+              </button>
+            </p>
           </td>
 
-        <td>
-              <a v-bind:href="[[=URL()]]+'info/'+sessionT.id">
+          <td>
+            <a v-bind:href="[[=URL()]]+'info/'+sessionT.id">
               {{sessionT.name}}
             </a>
-                <span class="tag" v-if="sessionT.open">open</span>
-                <span class="tag" v-else>closed</span>
-
-
-        </td>
-        <td>
+            <span class="tag" v-if="sessionT.open">open</span>
+            <span class="tag" v-else>closed</span>
+          </td>
+          <td>
             <p class="tags">
               <span class="tag">
                 {{sessionT.course ? session.course : 'general'}}
@@ -55,68 +49,71 @@
                 {{sessionT.ta ? 'TA-led' : 'Student-led'}}
               </span>
             </p>
-
-        </td>
-        <td>
+          </td>
+          <td>
             <span class="tag">
               <input
                 class="tag input is-static has-text-weight-light"
                 readonly
-                style="min-width:6rem;"
-                v-bind:value="sessionT.location" >
+                style="min-width: 6rem"
+                v-bind:value="sessionT.location"
+              />
             </span>
-
-        </td>
-        <td>
+          </td>
+          <td>
             <span class="tag">
-              <input type="time"
+              <input
+                type="time"
                 class="tag input is-static has-text-weight-light"
                 readonly
-                v-bind:value="sessionT.time.slice(0,5)" >
+                v-bind:value="sessionT.time.slice(0,5)"
+              />
             </span>
             <span class="tag">
               <span v-if="sessionT.len>59">
                 {{Math.floor(sessionT.len/60)}}h
               </span>
-              <span v-if="sessionT.len%60">
-                {{sessionT.len%60}}m
-              </span>
+              <span v-if="sessionT.len%60"> {{sessionT.len%60}}m </span>
             </span>
-        </td>
-        <td><p class="tags">
-              <span class="tag"
-                v-for="day in convert_days(sessionT.days)" >
+          </td>
+          <td>
+            <p class="tags">
+              <span class="tag" v-for="day in convert_days(sessionT.days)">
                 {{day}}
               </span>
-            </p></td>
-        <td>
+            </p>
+          </td>
+          <td>
             <span class="tag" v-if="sessionT.start==sessionT.end">
-              <input type="date"
+              <input
+                type="date"
                 class="tag input is-static has-text-weight-light"
                 readonly
-                v-bind:value="sessionT.start" >
+                v-bind:value="sessionT.start"
+              />
             </span>
             <span class="tag" v-else>
-              <input type="date"
+              <input
+                type="date"
                 class="tag input is-static has-text-weight-light"
                 readonly
-                v-bind:value="sessionT.start" >
+                v-bind:value="sessionT.start"
+              />
               <span class="tag">-</span>
-              <input type="date"
+              <input
+                type="date"
                 class="tag input is-static has-text-weight-light"
                 readonly
                 v-if="sessionT.end"
-                v-bind:value="sessionT.end" >
+                v-bind:value="sessionT.end"
+              />
               <span v-else>ongoing</span>
             </span>
-        </td>
-      </tr>
-
+          </td>
+        </tr>
       </tbody>
     </table>
-
-    </div>
-
+  </div>
 </div>
 
 [[block page_scripts]]
@@ -128,6 +125,4 @@
 <script src="js/find_sessions.js"></script>
 <script src="js/my_sessions.js"></script>
 
-
-[[super]]
-[[end]]
+[[super]] [[end]]

@@ -39,44 +39,38 @@ let item_search_template = `
 </div>
 `;
 let init_component = (component) => {
-    component.data = function() {
-      this.search_query = '';
-      this.search_results = [];
-    };
-    component.methods = {
-      do_search:function() {
-        axios.get(
-          this.search_url,
-          {params:{query:this.search_query}},
-        ).then((r) => {
+  component.data = function () {
+    this.search_query = "";
+    this.search_results = [];
+  };
+  component.methods = {
+    do_search: function () {
+      axios
+        .get(this.search_url, { params: { query: this.search_query } })
+        .then((r) => {
           this.search_results = r.data.r;
         });
-      },
-      toggle_select:function(item) {
-        for (let i = 0; i<this.selected_items.length; i++) {
-          if (this.selected_items[i].id==item.id) {
-            this.selected_items.splice(i,1);
-            return;
-          }
+    },
+    toggle_select: function (item) {
+      for (let i = 0; i < this.selected_items.length; i++) {
+        if (this.selected_items[i].id == item.id) {
+          this.selected_items.splice(i, 1);
+          return;
         }
-        this.selected_items.push(item);
-      },
-    };
-    component.vue = Vue.extend({
-      props:[
-        'item_name',
-        'min_items',
-        'search_url',
-        'selected_items',
-      ],
-      data:function() { 
-        this.do_search();
-        return new component.data();
-      },
-      methods:component.methods,
-      template:item_search_template,
-    });
-    Vue.component('item-search',component.vue);
-}
+      }
+      this.selected_items.push(item);
+    },
+  };
+  component.vue = Vue.extend({
+    props: ["item_name", "min_items", "search_url", "selected_items"],
+    data: function () {
+      this.do_search();
+      return new component.data();
+    },
+    methods: component.methods,
+    template: item_search_template,
+  });
+  Vue.component("item-search", component.vue);
+};
 let component = {};
 init_component(component);

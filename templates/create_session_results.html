@@ -1,68 +1,74 @@
 [[extend 'sidebar_layout.html']]
 
-
 <div class="section" id="vue-target" v-cloak>
-    <div class="columns is-fullheight is-narrow-mobile">
-        
+  <div class="columns is-fullheight is-narrow-mobile">
+    <div class="column create_session">
+      <!-- title -->
+      <div class="block">
+        <div class="title has-text-weight-light is-mobile">My Sessions</div>
+      </div>
 
+      <!-- add new entry -->
+      <div class="block">
+        <a class="button is-link is-outlined" href="[[=URL('create_session')]]">
+          <span class="icon"><i class="fa fa-plus"></i></span>
+          <span>Create New Session</span>
+        </a>
+      </div>
 
-        <div class="column create_session">
-            <!-- title -->
-            <div class="block">
-            <div class="title has-text-weight-light is-mobile">My Sessions</div>
-            </div>
-        
-            <!-- add new entry -->
-            <div class="block">
-              <a class="button is-link is-outlined" href="[[=URL('create_session')]]">
-                  <span class="icon"><i class="fa fa-plus"></i></span>
-                  <span>Create New Session</span>
-              </a>
-            </div>
-        
-            <!-- table -->
-            <div class="block">
-                <table class="table is-fullwidth">
-                    <thead>
-                        <tr>
-                            <th><div class="has-text-weight-bold">Session Name</div></th>
-                            <th><div class="has-text-weight-bold">School</div></th>
-                            <th><div class="has-text-weight-bold">Term</div></th>
-                            <th><div class="has-text-weight-bold">Class Name</div></th>
-                            <th></th>
-                            <th></th>
-                        </tr>
-                    </thead>
-            
-                    <tbody v-for="r in session_list">
-                        <tr>
-                          <td><a :href=r.info_url>{{r.session_name}}</a></td>
-                          <td>{{r.school}}</td>
-                          <td>{{r.term}}</td>
-                          <td>{{r.class_name}}</td>
-                          <td>
-                            <a v-if="r.add_edit_status" class="button is-success is-outlined is-light"  :href="r.edit">
-                              Edit
-                            </a>
-                            <a v-if="r.remove_delete_status" class="button is-danger is-outlined is-light" :href="r.delete">
-                              Delete
-                            </a>
-                            <a v-else="r.remove_delete_status" class="button is-danger is-outlined is-light">
-                              Remove
-                            </a>
-                          </td>
-                          <td>
-                            <a :href="r.calendar">Add to Google Calendar</a>
-                          </td>
-                        </tr>
-                        [[pass]]
-                    </tbody>
-                </table>
-            </div>
-        </div>
+      <!-- table -->
+      <div class="block">
+        <table class="table is-fullwidth">
+          <thead>
+            <tr>
+              <th><div class="has-text-weight-bold">Session Name</div></th>
+              <th><div class="has-text-weight-bold">School</div></th>
+              <th><div class="has-text-weight-bold">Term</div></th>
+              <th><div class="has-text-weight-bold">Class Name</div></th>
+              <th></th>
+              <th></th>
+            </tr>
+          </thead>
+
+          <tbody v-for="r in session_list">
+            <tr>
+              <td><a :href="r.info_url">{{r.session_name}}</a></td>
+              <td>{{r.school}}</td>
+              <td>{{r.term}}</td>
+              <td>{{r.class_name}}</td>
+              <td>
+                <a
+                  v-if="r.add_edit_status"
+                  class="button is-success is-outlined is-light"
+                  :href="r.edit"
+                >
+                  Edit
+                </a>
+                <a
+                  v-if="r.remove_delete_status"
+                  class="button is-danger is-outlined is-light"
+                  :href="r.delete"
+                >
+                  Delete
+                </a>
+                <a
+                  v-else="r.remove_delete_status"
+                  class="button is-danger is-outlined is-light"
+                >
+                  Remove
+                </a>
+              </td>
+              <td>
+                <a :href="r.calendar">Add to Google Calendar</a>
+              </td>
+            </tr>
+            [[pass]]
+          </tbody>
+        </table>
+      </div>
     </div>
+  </div>
 </div>
-
 
 [[block page_scripts]]
 <!-- Loads the index-specific js for Vue -->
