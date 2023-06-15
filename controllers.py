@@ -559,7 +559,7 @@ def profile():
       get_profile_url=URL('get_profile', signer=url_signer),
       save_profile_url=URL('save_profile', signer=url_signer),
     )
-  redirect(auth, login)
+  # redirect(auth, login)
 
 # Dashboard - user can check all study session schedule
 @action('dashboard', method=["GET", "POST"])
