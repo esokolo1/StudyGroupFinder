@@ -143,6 +143,7 @@
     <table class="table is-hoverable has-text-weight-light" v-else>
       <thead>
         <tr>
+          <td></td>
           <td>session</td>
           <td>tags</td>
           <td>location</td>
@@ -154,7 +155,19 @@
       <tbody>
         <tr v-for="session in session_results" >
           <td>
-            <a v-bind:href="[[=URL()]]+'session/'+session.id">
+
+            <!-- Render the button based on the is_enrolled property -->
+              <p class="control">
+                  <button :class="{'button': true, 'is-success': !getEnrollmentStatus(session.id), 'is-danger': getEnrollmentStatus(session.id), 'is-outlined': true}" @click="toggle_enroll(session)">
+                    <span class="icon is-small">
+                      <i :class="{'fa fa-check': !getEnrollmentStatus(session.id), 'fa fa-times': getEnrollmentStatus(session.id)}"></i>
+                    </span>
+                    <span>{{ getEnrollmentStatus(session.id) ? 'Un-enroll' : 'Enroll' }}</span>
+                  </button>
+              </p>
+          </td>
+          <td>
+            <a v-bind:href="[[=URL()]]+'info/'+session.id">
               {{session.name}}
             </a>
             <span class="tag" v-if="session.open">open</span>
@@ -236,6 +249,9 @@
 <script>
   let search_sessions_url = "[[=XML(search_sessions_url)]]";
   let get_enrolled_schools_url = "[[=XML(get_enrolled_schools_url)]]";
+  let get_enrolled_sessions_url = "[[=XML(get_enrolled_sessions_url)]]";
+  let remove_session_url = "[[=XML(remove_session_url)]]";
+  let enroll_session_url = "[[=XML(enroll_session_url)]]";
 </script>
 <script src="js/form_row.js"></script>
 <script src="js/item_search.js"></script>
