@@ -204,7 +204,7 @@ let init = (app) => {
     axios.get(get_enrolled_schools_url,
     ).then((r) => {
       app.vue.enrolled_schools = r.data.r;
-      app.vue.selected_school = app.vue.enrolled_schools[0].id;
+      app.vue.selected_school = 0;
     });
   };
 

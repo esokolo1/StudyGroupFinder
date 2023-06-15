@@ -2,7 +2,7 @@
 
 <div class="section" id="session-app" v-cloak>
   <h3 class="title has-text-weight-light">Session</h3>
-
+  [[if is_user:]]
   <fieldset class="block" v-if="id">
     <form-row>
       <p class="control">
@@ -14,6 +14,7 @@
       </p>
     </form-row>
   </fieldset>
+  [[pass]]
   <fieldset class="block">
     <form-row label="session name:" :invalid="invalid_name">
       <p class="control is-expanded">

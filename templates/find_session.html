@@ -47,13 +47,15 @@
     <fieldset class="block columns" v-if="filters_on">
       <div class="column">
         <form-row label="class:">
-          <item-search
-            item_name="course"
-            v-bind:min_times="0"
+          <search-choose
             search_url="[[=XML(get_courses_url)]]"
-            v-bind:selected_items="selected_courses"
+            :click="(x) => { let i = selected_courses.indexOf(x); if (i > -1) selected_courses.splice(i,1); else selected_courses.push(x)}"
+            :display="(x) => x.name"
+            :selected="selected_courses"
+            results_name="r"
+            editable
           >
-          </item-search>
+          </search-choose>
         </form-row>
         <form-row label="status:">
           <div class="field">
@@ -167,7 +169,7 @@
               </p>
           </td>
           <td>
-            <a v-bind:href="[[=URL()]]+'info/'+session.id">
+            <a v-bind:href="[[=URL()]]+'session/'+session.id">
               {{session.name}}
             </a>
             <span class="tag" v-if="session.open">open</span>
@@ -254,6 +256,6 @@
   let enroll_session_url = "[[=XML(enroll_session_url)]]";
 </script>
 <script src="js/form_row.js"></script>
-<script src="js/item_search.js"></script>
+<script src="js/comp/search_choose.js"></script>
 <script src="js/find_session.js"></script>
 [[end]]

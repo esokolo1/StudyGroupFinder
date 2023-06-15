@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 let init_profile = (app) => {
   app.data = {
     email: '',

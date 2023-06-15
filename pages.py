@@ -42,17 +42,22 @@ def session(session_id=0):
   editable = False
   if session_id > 0:
     session_row = db.session[session_id]
-    if session_row is None: # session does not exist
-      redirect(URL('session'))
+    if session_row is None:
+      # session does not exist
+      redirect(URL('index'))
     # if looking at an existing session,
     # session is editable if user is session's author
     editable = session_row.user_id == get_user_id()
   elif auth.current_user:
     # logged-in useer may create a new session
     editable = True
+  else:
+    # not logged-in, not looking at an existing session
+    redirect(URL('auth','login'))
   return dict(
     week=week,
     session_id=session_id,
+    is_user=True if auth.current_user else False,
     editable=editable,
     fetch_courses_url=URL('fetch_courses', signer=url_signer),
     fetch_sessions_url=URL('fetch_sessions', signer=url_signer),
