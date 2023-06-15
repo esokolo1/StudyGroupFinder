@@ -1,82 +1,114 @@
-let app = {};
-
-let init = (app) => {
-
-    app.data = {
-      email:'',
-      first_name:'',
-      last_name:'',
-      description:'',
-      selected_schools:[],
-      selected_courses:[],
-      min_selected_schools:1,
-      min_selected_courses:1,
-      is_saved:false,
-    };
-
-    app.computed = {
-      is_valid_name:function() {
-        return (
-          this.first_name.length > 0
-          || this.last_name.length > 0
-        );
-      },
-      is_valid_form:function() {
-        return (
-          this.is_valid_name
-          && this.selected_schools.length >= this.min_selected_schools
-          && this.selected_courses.length >= this.min_selected_courses
-        );
-      },
-    };
-
-    app.methods = {
-      save_profile:function() {
-        if (this.is_valid_form) {
-          this.is_saved = false;
-          axios.post(save_profile_url,
-            {
-              first_name:this.first_name,
-              last_name:this.last_name,
-              description:this.description,
-              enrolled_schools:this.selected_schools,
-              enrolled_courses:this.selected_courses,
-            }
-          ).then(() => {
-            this.is_saved = true;
-          });
-        }
-      },
-    };
-
-    app.vue = new Vue({
-      el: "#vue-target",
-      data: app.data,
-      methods: app.methods,
-      computed: app.computed,
-    });
-
-    app.init = () => {
-      axios.get(get_profile_url,
+let init_profile = (app) => {
+  app.data = {
+    email: '',
+    first: '',
+    last: '',
+    desc: '',
+    editing: false,
+    enrolled_schools: [],
+    enrolled_courses: [],
+  };
+  app.computed = {
+    invalid_name: function() {
+      if ( this.first.length < 1
+        && this.last.length < 1 ) {
+        return 'a name is required';
+      }
+    },
+    invalid_schools: function() {
+      if (this.enrolled_schools.length < 1) {
+        return 'choose at least 1 school';
+      }
+    },
+    invalid_courses: function() {
+      if (this.enrolled_courses.length < 1) {
+        return 'choose at least 1 course';
+      }
+    },
+    invalid_form: function() {
+      if ( this.invalid_name
+        || this.invalid_schools
+        || this.invalid_courses ) {
+        return true;
+      }
+    }
+  }
+  app.methods = {
+    fetch_profile: function() {
+      axios.get(fetch_profile_url,
       ).then((r) => {
-        app.vue.email = r.data.email;
-        app.vue.first_name = r.data.first_name;
-        app.vue.last_name = r.data.last_name;
-        app.vue.description = r.data.description;
+        this.email=r.data.email;
+        this.first=r.data.first;
+        this.last=r.data.last;
+        this.desc=r.data.desc;
       });
-      axios.get(get_enrolled_schools_url,
-      ).then((r) => {
-        app.vue.selected_schools = r.data.r;
+    },
+    write_profile: function() {
+      axios.post(write_profile_url,{
+        first: this.first,
+        last: this.last,
+        desc: this.desc,
+      }).then(() => {
+        //this.fetch_profile();
       });
-      axios.get(get_enrolled_courses_url,
-      ).then((r) => {
-        app.vue.selected_courses = r.data.r;
-      });
-      app.vue.is_saved = true;
-    };
+    },
+    toggle_editing: function() {
+      if (this.editing) this.write_profile();
+      this.editing = !this.editing;
+    },
 
-    app.init();
+    /*search-choose for school*/
+    get_enrolled_schools: function() {
+      axios.get(fetch_schools_url, { params: {
+        my:true,
+      }}).then((r) => {
+        this.enrolled_schools = r.data.schools;
+      });
+    },
+    click_school: function(school) {
+      school.enrolled = !school.enrolled;
+      axios.get(enroll_school_url, { params: {
+        id: school.id,
+        enroll: school.enrolled ? 1 : null,
+      }}).then(() => {
+        this.get_enrolled_schools();
+      });
+    },
+    display_school: (school) => {
+      return school.name;
+    },
+
+    /*search-choose for courses*/
+    get_enrolled_courses: function() {
+      axios.get(fetch_courses_url, { params: {
+        my:true,
+      }}).then((r) => {
+        this.enrolled_courses = r.data.courses;
+      });
+    },
+    click_course: function(course) {
+      course.enrolled = !course.enrolled;
+      axios.get(enroll_course_url, { params: {
+        id: course.id,
+        enroll: course.enrolled ? 1 : null,
+      }}).then(() => {
+        this.get_enrolled_courses();
+      });
+    },
+    display_course: (course) => (
+      course.subject + ' ' + course.num + ' - ' + course.title
+    ),
+  };
+  app.vue = new Vue({
+    el: '#profile-app',
+    data: app.data,
+    computed: app.computed,
+    methods: app.methods,
+  });
+  /*init*/
+  app.vue.get_enrolled_schools();
+  app.vue.get_enrolled_courses();
+  app.vue.fetch_profile();
 };
-
-init(app);
-console.log(app.vue);
+let profile_app = {};
+init_profile(profile_app);

@@ -1,0 +1,217 @@
+[[extend 'sidebar_layout.html']]
+
+<div class="section" id="session-app" v-cloak>
+  <h3 class="title has-text-weight-light">Session</h3>
+
+  <fieldset class="block" v-if="id">
+    <form-row>
+      <p class="control">
+        <button class="button"
+          @click="attend_session">
+          <span v-if="attending">leave session</span>
+          <span v-else>join session</span>
+        </button>
+      </p>
+    </form-row>
+  </fieldset>
+  <fieldset class="block">
+    <form-row label="session name:" :invalid="invalid_name">
+      <p class="control is-expanded">
+        <input class="input"
+          placeholder="session name"
+          :class="{'is-static':!editing}"
+          :readonly="!editing"
+          v-model.trim="name"
+        >
+      </p>
+    </form-row>
+    <form-row label="about:">
+      <p class="control">
+        <textarea class="textarea"
+          placeholder="about the session"
+          :class="{'has-fixed-size':!editing}"
+          :readonly="!editing"
+          v-model="desc"
+        >
+        </textarea>
+      </p>
+    </form-row>
+    <form-row label="class:" group
+      :help="editing ?
+        'add more courses through your ' +
+        'profile for more options' : null"
+    >
+      <p class="control">
+        <span class="select"
+          v-if="editing"
+        >
+          <select v-model="course"
+            :class="{'is-static':!editing}"
+            :readonly="!editing"
+          >
+            <option value="null">no class (general session)</option>
+            <option v-for="course in enrolled_courses"
+              :value="course"
+            >
+              {{display_course(course)}}
+            </option>
+          </select>
+        </span>
+        <span v-else-if="course">
+          {{display_course(course)}}
+        </span>
+        <span v-else>
+          no class (general session)
+        </span>
+      </p>
+      <p class="control">
+        <span class="select" v-if="editing">
+          <select v-model="ta">
+            <option value="false">Student-led</option>
+            <option value="true">TA-led</option>
+          </select>
+        </span>
+        <span v-else>{{ta ? 'TA-lead' : 'Student-led'}}</span>
+      </p>
+    </form-row>
+    <form-row label="location:" :invalid="invalid_loc">
+      <p class="control is-expanded">
+        <input class="input"
+          placeholder="meeting location / link"
+          :class="{'is-static':!editing}"
+          :readonly="!editing"
+          v-model.trim="loc"
+        >
+      </p>
+    </form-row>
+    <form-row label="student capacity:" group>
+      <p class="control">
+        <input class="input" type="number"
+          placeholder="none"
+          min="1"
+          :class="{'is-static':!editing}"
+          :readonly="!editing"
+          v-model.number="cap"
+        >
+      </p>
+    </form-row>
+    <form-row label="time:" :invalid="invalid_time" joined>
+      <p class="control">
+        <input class="input" type="time"
+          :readonly="!editing"
+          v-model.trim="time_start"
+        >
+      </p>
+      <ctrl-btn static v-if="editing || time_end">-</ctrl-btn>
+      <p class="control">
+        <input class="input" type="time"
+          :readonly="!editing"
+          v-model.trim="time_end"
+          v-if="editing || time_end"
+        >
+      </p>
+      <ctrl-btn static>
+        <span v-show="time_len">
+          {{Math.floor(time_len / 60)}}h
+          {{time_len % 60}}m
+        </span>
+      </ctrl-btn>
+    </form-row>
+    <form-row label="date:" :invalid="invalid_dates" joined>
+      <p class="control">
+        <input class="input" type="date"
+          :readonly="!editing"
+          v-model.trim="start"
+        >
+      </p>
+      <ctrl-btn static v-if="repeating">-</ctrl-btn>
+      <p class="control"
+        v-if="repeating && end"
+      >
+        <input class="input" type="date"
+          :readonly="!editing"
+          v-model.trim="end"
+        >
+      </p>
+      <ctrl-btn :fxn="toggle_end" v-if="editing && repeating">
+        <span class="icon" v-if="end">
+          <i class="fa fa-times"></i>
+        </span>
+        <span v-else>
+          no end-date
+        </span>
+      </ctrl-btn>
+    </form-row>
+    <form-row label="meeting days:" :invalid="invalid_days">
+      <p class="control" v-if="editing && repeating">
+        <span class="select is-multiple">
+          <select multiple size="[[=len(week)]]"
+            v-model="days">
+            [[for day in week:]]
+            <option value="[[=day]]">[[=day]]</option>
+            [[pass]]
+          </select>
+        </span>
+      </p>
+      <p class="control buttons" v-else-if="repeating">
+        <button class="button is-static" v-for="day in days">
+          {{day}}
+        </button>
+      </p>
+      <p class="control" v-else>
+        <button class="button is-static">
+          {{start_day}}
+        </button>
+      </p>
+    </form-row>
+    <form-row label="repeating:" v-if="editing">
+      <p class="control">
+        <label class="checkobx">
+          <input type="checkbox"
+            v-model="repeating"
+          >
+          is repeating
+        </label>
+      </p>
+    </form-row>
+  </fieldset>
+  [[if editable:]]
+  <fieldset>
+    <form-row group right>
+      <p class="control">
+        <button class="button is-primary"
+          @click="toggle_editing"
+          :disabled="invalid_form"
+        >
+          <span v-if="editing">save</span>
+          <span v-else>edit</span>
+        </button>
+      </p>
+    </form-row>
+    <form-row group right v-show="id && editing">
+      <p class="control">
+        <button class="button is-danger"
+          @click="delete_session"
+        >
+          delete session
+        </button>
+      </p>
+    </form-row>
+  </fieldset>
+  [[pass]]
+</div>
+
+
+[[block page_scripts]]
+[[super]]
+<script>
+const editable = [[if editable:]]true[[else:]]false[[pass]];
+const session_id = [[if session_id:]][[=session_id]][[else:]]null[[pass]];
+let fetch_courses_url = "[[=XML(fetch_courses_url)]]";
+let fetch_sessions_url = "[[=XML(fetch_sessions_url)]]";
+let attend_session_url = "[[=XML(attend_session_url)]]";
+let write_session_url = "[[=XML(write_session_url)]]";
+</script>
+<script src="js/comp/form.js"></script>
+<script src="js/session.js"></script>
+[[end]]
